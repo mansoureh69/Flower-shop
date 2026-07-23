@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="flower-shop.client/flower-shop.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="Flower-shop.Server/Flower-shop.Server.csproj" />
+  <Project Path="SweetFlowerShop.Application/SweetFlowerShop.Application.csproj" />
+  <Project Path="SweetFlowerShop.Domain/SweetFlowerShop.Domain.csproj" />
+  <Project Path="SweetFlowerShop.Infrastructure/SweetFlowerShop.Infrastructure.csproj" />
+</Solution>

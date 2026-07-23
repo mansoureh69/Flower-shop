@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+
+# NuGet
+packages/
+
+# Node
+node_modules/
+dist/
+
+# OS files
+Thumbs.db
+.DS_Store
