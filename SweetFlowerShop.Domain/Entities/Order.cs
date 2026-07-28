@@ -12,7 +12,7 @@ namespace SweetFlowerShop.Domain.Entities;
 /// Payment is a SEPARATE aggregate — Order does not track PaymentStatus.
 /// All item prices are snapshotted at order time.
 /// </summary>
-public class Order : AggregateRoot
+public class Order : AggregateRoot, IAuditable
 {
     private readonly List<OrderItem> _items = new();
 

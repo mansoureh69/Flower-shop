@@ -10,7 +10,7 @@ namespace SweetFlowerShop.Domain.Entities;
 /// Separate from Order because payment has its own lifecycle (retries, refunds, provider integration).
 /// Dependent entities: PaymentTransaction
 /// </summary>
-public class Payment : AggregateRoot
+public class Payment : AggregateRoot, IAuditable
 {
     private readonly List<PaymentTransaction> _transactions = new();
 

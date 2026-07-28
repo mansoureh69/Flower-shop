@@ -9,7 +9,7 @@ namespace SweetFlowerShop.Domain.Entities;
 /// Dependent entities: ProductImage
 /// References Category by ID only (separate aggregate).
 /// </summary>
-public class Product : AggregateRoot
+public class Product : AggregateRoot, ISoftDeletable, IAuditable
 {
     private readonly List<ProductImage> _images = new();
 
@@ -19,6 +19,8 @@ public class Product : AggregateRoot
     public Guid CategoryId { get; private set; }
     public bool IsAvailable { get; private set; } = true;
     public DateTime CreatedAt { get; private set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAtUtc { get; private set; }
 
     public IReadOnlyCollection<ProductImage> Images => _images;
 
@@ -78,5 +80,12 @@ public class Product : AggregateRoot
         var image = _images.FirstOrDefault(i => i.Id == imageId);
         if (image is not null)
             _images.Remove(image);
+    }
+
+    public void MarkAsDeleted()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+        Deactivate(); // Soft-deleted products are automatically unavailable
     }
 }

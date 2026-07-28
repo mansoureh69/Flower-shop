@@ -8,12 +8,14 @@ namespace SweetFlowerShop.Domain.Entities;
 /// Supports up to 3 levels of hierarchy. Does NOT hold Products — that's a query concern.
 /// Deletion guard (has children/products) is enforced by CategoryDeletionService.
 /// </summary>
-public class Category : AggregateRoot
+public class Category : AggregateRoot, ISoftDeletable, IAuditable
 {
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
     public Guid? ParentCategoryId { get; private set; }
     public int Level { get; private set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAtUtc { get; private set; }
 
     private Category() { }
 
@@ -40,4 +42,10 @@ public class Category : AggregateRoot
     }
 
     public void UpdateDescription(string description) => Description = description;
+
+    public void MarkAsDeleted()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+    }
 }

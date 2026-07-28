@@ -8,13 +8,15 @@ namespace SweetFlowerShop.Domain.Entities;
 /// Aggregate Root - Customer who places orders.
 /// Does NOT hold a list of Orders — Order is a separate aggregate referenced by CustomerId.
 /// </summary>
-public class Customer : AggregateRoot
+public class Customer : AggregateRoot, ISoftDeletable, IAuditable
 {
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
     public Email Email { get; private set; } = null!;
     public string Phone { get; private set; } = string.Empty;
     public Address? DefaultAddress { get; private set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAtUtc { get; private set; }
 
     public string FullName => $"{FirstName} {LastName}";
 
@@ -51,4 +53,10 @@ public class Customer : AggregateRoot
     public void ChangePhone(string phone) => Phone = phone;
 
     public void SetDefaultAddress(Address address) => DefaultAddress = address;
+
+    public void MarkAsDeleted()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+    }
 }

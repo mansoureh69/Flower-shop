@@ -13,10 +13,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.0-preview.1.25120.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SweetFlowerShop.Application\SweetFlowerShop.Application.csproj" />
+    <ProjectReference Include="..\SweetFlowerShop.Infrastructure\SweetFlowerShop.Infrastructure.csproj" />
     <ProjectReference Include="..\flower-shop.client\flower-shop.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

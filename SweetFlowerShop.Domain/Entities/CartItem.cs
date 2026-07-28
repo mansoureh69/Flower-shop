@@ -10,7 +10,7 @@ public class CartItem : Entity
 {
     public Guid CartId { get; private set; }
     public Guid ProductId { get; private set; }
-    public int Quantity { get; private set; }
+    public int Quantity { get; private set; } = 0;
     public int Price     { get; private set; }
 
     private CartItem() { }
