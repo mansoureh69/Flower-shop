@@ -11,6 +11,5 @@ public record PlaceOrderCommand(
 
 public record OrderItemRequest(
     Guid ProductId,
-    string ProductName,
-    decimal UnitPrice,
-    int Quantity);
+    int Quantity,
+    string? Notes);

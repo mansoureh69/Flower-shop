@@ -2,6 +2,8 @@ namespace SweetFlowerShop.Domain.ValueObjects;
 
 public record Money
 {
+    private decimal unitPrice;
+
     public decimal Amount { get; }
     public string Currency { get; }
 
@@ -15,6 +17,11 @@ public record Money
 
         Amount = amount;
         Currency = currency.ToUpperInvariant();
+    }
+
+    public Money(decimal unitPrice)
+    {
+        this.unitPrice = unitPrice;
     }
 
     public static Money Zero(string currency = "USD") => new(0, currency);

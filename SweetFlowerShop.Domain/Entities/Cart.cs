@@ -26,7 +26,7 @@ public class Cart : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void AddItem(Guid productId, int quantity)
+    public void AddItem(Guid productId, Product product, int quantity)
     {
         if (quantity <= 0)
             throw new InvalidQuantityException();
@@ -38,7 +38,7 @@ public class Cart : AggregateRoot
         }
         else
         {
-            _items.Add(new CartItem(Id, productId, quantity));
+            _items.Add(new CartItem(Id, product, quantity));
         }
 
         UpdatedAt = DateTime.UtcNow;

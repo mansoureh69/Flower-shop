@@ -14,7 +14,13 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
         builder.Property(i => i.CartId).IsRequired();
         builder.Property(i => i.ProductId).IsRequired();
         builder.Property(i => i.Quantity).IsRequired();
-        builder.Property(i => i.Price);
+
+        // Configure Money value object for snapshotted price
+        builder.ComplexProperty(i => i.SnapshotPrice, cp =>
+        {
+            cp.Property(m => m.Amount).IsRequired();
+            cp.Property(m => m.Currency).IsRequired().HasMaxLength(3);
+        });
 
         // Business invariant: a product can appear only once per cart
         // (quantity is incremented, not duplicated)

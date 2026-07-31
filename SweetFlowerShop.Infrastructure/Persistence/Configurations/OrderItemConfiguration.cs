@@ -13,7 +13,6 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 
         builder.Property(i => i.OrderId).IsRequired();
         builder.Property(i => i.ProductId).IsRequired();
-        builder.Property(i => i.ProductName).HasMaxLength(200).IsRequired();
         builder.Property(i => i.UnitPrice).IsRequired();
         builder.Property(i => i.Quantity).IsRequired();
 

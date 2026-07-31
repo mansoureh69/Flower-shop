@@ -35,7 +35,7 @@ public class Order : AggregateRoot, IAuditable
         Notes = notes;
     }
 
-    public void AddItem(Guid productId, string productName, decimal unitPrice, int quantity)
+    public void AddItem(Guid productId, Product product, int quantity, string? notes = null)
     {
         if (Status != OrderStatus.Pending)
             throw new InvalidOrderStateException("add items to", Status.ToString());
@@ -50,7 +50,7 @@ public class Order : AggregateRoot, IAuditable
         }
         else
         {
-            _items.Add(new OrderItem(Id, productId, productName, unitPrice, quantity));
+            _items.Add(new OrderItem(Id, product, quantity, notes));
         }
     }
 

@@ -15,8 +15,6 @@ public sealed class PlaceOrderCommandValidator : AbstractValidator<PlaceOrderCom
         RuleForEach(x => x.Items).ChildRules(item =>
         {
             item.RuleFor(i => i.ProductId).NotEmpty();
-            item.RuleFor(i => i.ProductName).NotEmpty().MaximumLength(200);
-            item.RuleFor(i => i.UnitPrice).GreaterThan(0);
             item.RuleFor(i => i.Quantity).GreaterThan(0);
         });
     }

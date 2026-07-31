@@ -8,6 +8,7 @@ namespace SweetFlowerShop.Application.Features.Orders.PlaceOrder;
 
 public sealed class PlaceOrderCommandHandler(
     IOrderRepository orderRepository,
+    IProductRepository productRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<PlaceOrderCommand, Result<OrderResponse>>
 {
@@ -17,10 +18,18 @@ public sealed class PlaceOrderCommandHandler(
 
         foreach (var item in request.Items)
         {
-            order.AddItem(item.ProductId, item.ProductName, item.UnitPrice, item.Quantity);
+            // Validate product exists and is available before adding to order
+            var product = await productRepository.GetByIdAsync(item.ProductId, cancellationToken);
+            if (product is null || product.IsDeleted)
+                return Result<OrderResponse>.Failure($"Product not found: {item.ProductId}");
+
+            if (!product.IsAvailable)
+                return Result<OrderResponse>.Failure($"Product is not available: {product.Name}");
+
+            order.AddItem(product.Id, product, item.Quantity, item.Notes);
         }
 
-        order.Confirm();
+        //order.Confirm();
 
         await orderRepository.AddAsync(order, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -39,5 +48,5 @@ internal static class OrderMappingExtensions
         order.TotalAmount,
         order.Notes,
         order.Items.Select(i => new OrderItemResponse(
-            i.Id, i.ProductId, i.ProductName, i.UnitPrice, i.Quantity, i.TotalPrice)).ToList());
+            i.Id, i.ProductId, i.Product.Name, i.Product.Price.Amount, i.Quantity, i.TotalPrice)).ToList());
 }
