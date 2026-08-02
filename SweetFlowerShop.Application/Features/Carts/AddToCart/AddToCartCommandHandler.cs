@@ -9,11 +9,16 @@ namespace SweetFlowerShop.Application.Features.Carts.AddToCart;
 public sealed class AddToCartCommandHandler(
     ICartRepository cartRepository,
     IProductRepository productRepository,
+    ICurrentUserService currentUserService,
     IUnitOfWork unitOfWork)
     : IRequestHandler<AddToCartCommand, Result<CartResponse>>
 {
     public async Task<Result<CartResponse>> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
+        var customerId = currentUserService.UserId;
+        if (customerId is null)
+            return Result<CartResponse>.Failure("An authenticated customer is required.");
+
         // Step 1: Validate related entity (Product)
         var product = await productRepository.GetByIdAsync(request.ProductId, cancellationToken);
         if (product is null || product.IsDeleted)
@@ -23,11 +28,11 @@ public sealed class AddToCartCommandHandler(
             return Result<CartResponse>.Failure($"Product is not available: {product.Name}");
 
         // Step 2: Load or create cart
-        var cart = await cartRepository.GetByCustomerIdAsync(request.CustomerId, cancellationToken);
+        var cart = await cartRepository.GetByCustomerIdAsync(customerId.Value, cancellationToken);
 
         if (cart is null)
         {
-            cart = new Cart(request.CustomerId);
+            cart = new Cart(customerId.Value);
             await cartRepository.AddAsync(cart, cancellationToken);
         }
 

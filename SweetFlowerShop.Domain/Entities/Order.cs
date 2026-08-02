@@ -81,7 +81,20 @@ public class Order : AggregateRoot, IAuditable
 
     public void SetDeliveryInfo(DeliveryInfo deliveryInfo)
     {
+        if (Status != OrderStatus.Pending)
+            throw new InvalidOrderStateException("change delivery information for", Status.ToString());
+
+        ArgumentNullException.ThrowIfNull(deliveryInfo);
         DeliveryInfo = deliveryInfo;
+    }
+
+    public void EnsureReadyForPayment()
+    {
+        if (Status != OrderStatus.Pending)
+            throw new InvalidOrderStateException("place", Status.ToString());
+
+        if (_items.Count == 0)
+            throw new EmptyOrderException();
     }
 
     public void Confirm()

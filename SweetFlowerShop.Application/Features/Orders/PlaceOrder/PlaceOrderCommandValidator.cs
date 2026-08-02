@@ -6,9 +6,6 @@ public sealed class PlaceOrderCommandValidator : AbstractValidator<PlaceOrderCom
 {
     public PlaceOrderCommandValidator()
     {
-        RuleFor(x => x.CustomerId)
-            .NotEmpty().WithMessage("Customer ID is required.");
-
         RuleFor(x => x.Items)
             .NotEmpty().WithMessage("Order must contain at least one item.");
 

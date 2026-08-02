@@ -18,10 +18,12 @@ public sealed class UnitOfWork(
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // Step 1 & 2: Harvest and clear domain events BEFORE save
-        var domainEvents = CollectAndClearDomainEvents();
+        var aggregates = GetAggregatesWithDomainEvents();
+        var domainEvents = aggregates.SelectMany(a => a.DomainEvents).ToList();
 
         // Step 3: Persist — interceptors (SoftDelete → Audit) fire inside
         var result = await context.SaveChangesAsync(cancellationToken);
+        aggregates.ForEach(a => a.ClearDomainEvents());
 
         // Step 4: Dispatch events AFTER successful commit
         if (domainEvents.Count > 0)
@@ -43,13 +45,21 @@ public sealed class UnitOfWork(
             await using var transaction = await context.Database.BeginTransactionAsync(ct);
 
             await operation(ct);
-            await SaveChangesAsync(ct);
+            var aggregates = GetAggregatesWithDomainEvents();
+            var domainEvents = aggregates.SelectMany(a => a.DomainEvents).ToList();
+            await context.SaveChangesAsync(ct);
 
             await transaction.CommitAsync(ct);
+
+            aggregates.ForEach(a => a.ClearDomainEvents());
+            if (domainEvents.Count > 0)
+            {
+                await domainEventDispatcher.DispatchAsync(domainEvents, ct);
+            }
         }, cancellationToken);
     }
 
-    private List<IDomainEvent> CollectAndClearDomainEvents()
+    private List<AggregateRoot> GetAggregatesWithDomainEvents()
     {
         var aggregates = context.ChangeTracker
             .Entries<AggregateRoot>()
@@ -57,12 +67,6 @@ public sealed class UnitOfWork(
             .Select(e => e.Entity)
             .ToList();
 
-        var events = aggregates
-            .SelectMany(a => a.DomainEvents)
-            .ToList();
-
-        aggregates.ForEach(a => a.ClearDomainEvents());
-
-        return events;
+        return aggregates;
     }
 }

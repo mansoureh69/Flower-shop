@@ -9,12 +9,17 @@ namespace SweetFlowerShop.Application.Features.Orders.PlaceOrder;
 public sealed class PlaceOrderCommandHandler(
     IOrderRepository orderRepository,
     IProductRepository productRepository,
+    ICurrentUserService currentUserService,
     IUnitOfWork unitOfWork)
     : IRequestHandler<PlaceOrderCommand, Result<OrderResponse>>
 {
     public async Task<Result<OrderResponse>> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
     {
-        var order = new Order(request.CustomerId, request.Notes);
+        var customerId = currentUserService.UserId;
+        if (customerId is null)
+            return Result<OrderResponse>.Failure("An authenticated customer is required.");
+
+        var order = new Order(customerId.Value, request.Notes);
 
         foreach (var item in request.Items)
         {
@@ -36,6 +41,8 @@ public sealed class PlaceOrderCommandHandler(
                 quantity: item.Quantity,
                 notes: item.Notes);
         }
+
+        order.EnsureReadyForPayment();
 
         // Persist the order with all items snapshotted
         await orderRepository.AddAsync(order, cancellationToken);
