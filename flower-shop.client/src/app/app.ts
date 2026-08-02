@@ -1,11 +1,17 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component } from '@angular/core';
 
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
+interface CarouselImage {
+  readonly src: string;
+  readonly alt: string;
+}
+
+interface Service {
+  readonly number: string;
+  readonly title: string;
+  readonly description: string;
+  readonly image: string;
+  readonly alt: string;
+  readonly imageClass: string;
 }
 
 @Component({
@@ -14,25 +20,41 @@ interface WeatherForecast {
   standalone: false,
   styleUrl: './app.css'
 })
-export class App implements OnInit {
-  public forecasts: WeatherForecast[] = [];
+export class App {
+  readonly carouselImages: readonly CarouselImage[] = [
+    { src: '/assets/flowers/carousel-pink-roses.png', alt: 'Pink roses' },
+    { src: '/assets/flowers/carousel-white-rose.png', alt: 'White rose' },
+    { src: '/assets/flowers/carousel-pink-blooms.png', alt: 'Pink rose blooms' },
+    { src: '/assets/flowers/carousel-white-tulips.png', alt: 'White tulips' },
+    { src: '/assets/flowers/carousel-orchid.png', alt: 'Orchid' }
+  ];
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {
-    this.getForecasts();
-  }
-
-  getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
-  }
-
-  protected readonly title = signal('flower-shop.client');
+  readonly services: readonly Service[] = [
+    {
+      number: '1',
+      title: 'Floral installations',
+      description: 'Living art for homes, businesses, and events.',
+      image: '/assets/flowers/service-installations.png',
+      alt: 'Person carrying a bouquet of flowers',
+      imageClass: 'service__image--rounded'
+    },
+    {
+      number: '2',
+      title: 'Native plant arrangements',
+      description:
+        'Whether it’s a private retreat or a public space, we craft floral experiences that bloom beyond expectations.',
+      image: '/assets/flowers/service-native-arrangements.png',
+      alt: 'Florist making a bouquet',
+      imageClass: 'service__image--soft'
+    },
+    {
+      number: '3',
+      title: 'Custom floral concepts',
+      description:
+        'Your vision, our blooms. We build arrangements that are both personal and exquisitely simple. Whether it’s a private retreat or a public space, we craft floral experiences that bloom beyond expectations.',
+      image: '/assets/flowers/service-custom-concepts.png',
+      alt: 'Pink tulips in a vase',
+      imageClass: 'service__image--rounded'
+    }
+  ];
 }

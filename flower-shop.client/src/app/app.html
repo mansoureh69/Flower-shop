@@ -1,24 +1,65 @@
-﻿<h1 id="tableLabel">Weather forecast</h1>
+<main class="landing" tabindex="-1">
+  <section class="intro" id="about" aria-labelledby="about-title">
+    <div class="section-heading section-heading--intro">
+      <p class="eyebrow">Who we are</p>
+      <h1 id="about-title">We’re Our Blooms® and we’re here to help you find your floral story.</h1>
+    </div>
 
-<p>This component demonstrates fetching data from the server.</p>
+    <a class="accent-link" href="#services">
+      <img src="/assets/flowers/button-dot.svg" width="4" height="4" alt="" aria-hidden="true" />
+      <span>Explore</span>
+    </a>
+  </section>
 
-<p *ngIf="!forecasts"><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationangular">https://aka.ms/jspsintegrationangular</a> for more details.</em></p>
+  <section class="flower-carousel" aria-label="Flower gallery" tabindex="0">
+    <figure class="flower-carousel__item" *ngFor="let image of carouselImages; let index = index">
+      <img
+        [src]="image.src"
+        [alt]="image.alt + ' — image ' + (index + 1) + ' of ' + carouselImages.length"
+        width="200"
+        height="200"
+      />
+    </figure>
+  </section>
 
-<table *ngIf="forecasts">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Temp. (C)</th>
-            <th>Temp. (F)</th>
-            <th>Summary</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let forecast of forecasts">
-            <td>{{ forecast.date }}</td>
-            <td>{{ forecast.temperatureC }}</td>
-            <td>{{ forecast.temperatureF }}</td>
-            <td>{{ forecast.summary }}</td>
-        </tr>
-    </tbody>
-</table>
+  <section class="services" id="services" aria-labelledby="services-title">
+    <header class="services__header">
+      <h2 id="services-title">What we do</h2>
+      <p>We bring a touch of that simple magic into your world.</p>
+      <img class="divider" src="/assets/flowers/divider.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <ol class="services__list">
+      <li class="service" *ngFor="let service of services">
+        <p class="service__number" aria-hidden="true">{{ service.number }}</p>
+
+        <div class="service__image" [class]="'service__image ' + service.imageClass">
+          <img [src]="service.image" [alt]="service.alt" width="145" height="145" />
+        </div>
+
+        <div class="service__copy">
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.description }}</p>
+        </div>
+
+        <img class="divider" src="/assets/flowers/service-divider.svg" alt="" aria-hidden="true" />
+      </li>
+    </ol>
+  </section>
+
+  <figure class="feature-image">
+    <img src="/assets/flowers/purple-flowers.png" alt="Delicate purple flowers" />
+  </figure>
+
+  <section class="contact" aria-labelledby="contact-title">
+    <div class="section-heading section-heading--contact">
+      <p class="eyebrow">Work with us</p>
+      <h2 id="contact-title">Discover how we can add a touch of natural beauty to your next event.</h2>
+    </div>
+
+    <a class="accent-link" href="mailto:hello@ourblooms.com">
+      <img src="/assets/flowers/button-dot.svg" width="4" height="4" alt="" aria-hidden="true" />
+      <span>Inquire</span>
+    </a>
+  </section>
+</main>

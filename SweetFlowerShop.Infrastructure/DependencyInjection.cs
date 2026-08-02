@@ -34,10 +34,14 @@ public static class DependencyInjection
 
     private static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException(
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
                 "Connection string 'DefaultConnection' is not configured. " +
-                "Add it to appsettings.json under ConnectionStrings:DefaultConnection.");
+                "Configure it in appsettings.Local.json, .NET User Secrets, " +
+                "or the ConnectionStrings__DefaultConnection environment variable.");
+        }
 
         // Register interceptors
         // ORDER MATTERS: SoftDelete → Audit → SlowQuery

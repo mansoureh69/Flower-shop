@@ -3,6 +3,19 @@ using SweetFlowerShop.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Optional developer-specific settings. This file is excluded from Git so local
+// database credentials never need to be committed to the repository.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration
+        .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
+        .AddUserSecrets<Program>(optional: true)
+        .AddEnvironmentVariables();
+
+    if (args.Length > 0)
+        builder.Configuration.AddCommandLine(args);
+}
+
 // Add services to the container.
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

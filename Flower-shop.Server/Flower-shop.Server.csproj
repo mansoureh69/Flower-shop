@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Flower_shop.Server</RootNamespace>
+    <UserSecretsId>flower-shop-server-4e2aaab0-218b-4700-bd8a-a341fa29bcf3</UserSecretsId>
     <SpaRoot>..\flower-shop.client</SpaRoot>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:3697</SpaProxyServerUrl>
