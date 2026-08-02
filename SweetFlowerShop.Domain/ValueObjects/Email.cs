@@ -9,10 +9,12 @@ public partial record Email
 
     public Email(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) || !EmailRegex().IsMatch(value))
+        var normalizedValue = value?.Trim();
+
+        if (string.IsNullOrWhiteSpace(normalizedValue) || !EmailRegex().IsMatch(normalizedValue))
             throw new InvalidEmailException(value ?? string.Empty);
 
-        Value = value.Trim().ToLowerInvariant();
+        Value = normalizedValue.ToLowerInvariant();
     }
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]

@@ -6,6 +6,7 @@
 # Build results
 bin/
 obj/
+TestResults/
 
 # NuGet
 packages/

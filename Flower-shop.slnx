@@ -7,4 +7,5 @@
   <Project Path="SweetFlowerShop.Application/SweetFlowerShop.Application.csproj" />
   <Project Path="SweetFlowerShop.Domain/SweetFlowerShop.Domain.csproj" />
   <Project Path="SweetFlowerShop.Infrastructure/SweetFlowerShop.Infrastructure.csproj" />
+  <Project Path="tests/SweetFlowerShop.Domain.Tests/SweetFlowerShop.Domain.Tests.csproj" />
 </Solution>
