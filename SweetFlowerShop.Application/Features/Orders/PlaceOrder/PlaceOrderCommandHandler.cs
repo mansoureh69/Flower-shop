@@ -16,7 +16,7 @@ public sealed class PlaceOrderCommandHandler(
 {
     public async Task<Result<OrderResponse>> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
     {
-        var customerId = currentUserService.UserId;
+        var customerId = currentUserService.CustomerId;
         if (customerId is null)
             return Result<OrderResponse>.Failure("An authenticated customer is required.");
 

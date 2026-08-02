@@ -15,7 +15,7 @@ public sealed class AddToCartCommandHandler(
 {
     public async Task<Result<CartResponse>> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
-        var customerId = currentUserService.UserId;
+        var customerId = currentUserService.CustomerId;
         if (customerId is null)
             return Result<CartResponse>.Failure("An authenticated customer is required.");
 
@@ -37,7 +37,7 @@ public sealed class AddToCartCommandHandler(
         }
 
         // Step 3: Add item to cart with validated product
-        cart.AddItem(product.Id, product, request.Quantity);
+        cart.AddItem(product.Id, product.Name, product.Price, request.Quantity);
 
         cartRepository.Update(cart);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -56,7 +56,7 @@ internal static class CartMappingExtensions
                 new CartItemResponse(
                     i.Id,
                     i.ProductId,
-                    i.Product!.Name,
+                    i.ProductName,
                     i.SnapshotPrice.Amount,
                     i.Quantity)).ToList());
 }

@@ -24,4 +24,5 @@ public sealed class OrdersController(IMediator mediator) : ControllerBase
             ? CreatedAtAction(null, new { id = result.Value!.Id }, result.Value)
             : BadRequest(new { errors = result.Errors });
     }
+
 }

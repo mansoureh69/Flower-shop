@@ -30,6 +30,7 @@ public sealed class FlowerShopDbContext : IdentityDbContext<ApplicationUser, Ide
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<Payment> Payments => Set<Payment>();
+    internal DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     public FlowerShopDbContext(DbContextOptions<FlowerShopDbContext> options) : base(options) { }
 
@@ -58,6 +59,9 @@ public sealed class FlowerShopDbContext : IdentityDbContext<ApplicationUser, Ide
 
         // Move Identity tables to a separate schema to avoid namespace collision
         modelBuilder.Entity<ApplicationUser>().ToTable("Users", "identity");
+        modelBuilder.Entity<ApplicationUser>().HasOne<Customer>().WithOne()
+            .HasForeignKey<ApplicationUser>(user => user.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles", "identity");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", "identity");
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", "identity");

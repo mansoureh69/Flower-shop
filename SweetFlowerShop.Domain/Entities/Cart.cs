@@ -21,12 +21,14 @@ public class Cart : AggregateRoot
 
     public Cart(Guid customerId)
     {
+        if (customerId == Guid.Empty)
+            throw new ArgumentException("Customer ID is required.", nameof(customerId));
         CustomerId = customerId;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void AddItem(Guid productId, Product product, int quantity)
+    public void AddItem(Guid productId, string productName, ValueObjects.Money price, int quantity)
     {
         if (quantity <= 0)
             throw new InvalidQuantityException();
@@ -38,7 +40,7 @@ public class Cart : AggregateRoot
         }
         else
         {
-            _items.Add(new CartItem(Id, product, quantity));
+            _items.Add(new CartItem(Id, productId, productName, price, quantity));
         }
 
         UpdatedAt = DateTime.UtcNow;

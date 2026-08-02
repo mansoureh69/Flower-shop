@@ -44,6 +44,9 @@ public class Order : AggregateRoot, IAuditable
         if (items.Count == 0)
             throw new EmptyOrderException();
 
+        if (items.Select(item => item.UnitPrice.Currency).Distinct().Count() != 1)
+            throw new ArgumentException("All order lines must use the same currency.", nameof(items));
+
         var order = new Order
         {
             CustomerId = customerId,

@@ -34,6 +34,15 @@ public sealed class CurrentUserService : ICurrentUserService
         }
     }
 
+    public Guid? CustomerId
+    {
+        get
+        {
+            var value = _httpContextAccessor.HttpContext?.User.FindFirstValue("customer_id");
+            return Guid.TryParse(value, out var id) ? id : null;
+        }
+    }
+
     public string? UserName =>
         _httpContextAccessor.HttpContext?.User
             .FindFirstValue(ClaimTypes.Email)

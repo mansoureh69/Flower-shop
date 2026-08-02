@@ -16,6 +16,9 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.Property(c => c.CreatedAt).IsRequired();
         builder.Property(c => c.UpdatedAt).IsRequired();
 
+        builder.HasOne<Customer>().WithOne().HasForeignKey<Cart>(c => c.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Navigation to child entities — explicit backing field access
         builder.HasMany(c => c.Items)
             .WithOne()

@@ -18,6 +18,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(o => o.Notes).HasMaxLength(1000);
 
+        builder.HasOne<Customer>().WithMany().HasForeignKey(o => o.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Value Object: DeliveryInfo (nullable owned type — order may not have delivery info yet)
         builder.OwnsOne(o => o.DeliveryInfo, b => b.ConfigureDeliveryInfo());
         builder.Navigation(o => o.DeliveryInfo).IsRequired();

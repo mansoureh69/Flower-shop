@@ -17,6 +17,11 @@ public interface ICurrentUserService
     Guid? UserId { get; }
 
     /// <summary>
+    /// The domain customer represented by the authenticated user, if any.
+    /// </summary>
+    Guid? CustomerId { get; }
+
+    /// <summary>
     /// The authenticated user's email or username (null if anonymous).
     /// </summary>
     string? UserName { get; }

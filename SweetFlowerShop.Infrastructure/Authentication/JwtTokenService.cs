@@ -26,7 +26,7 @@ public sealed class JwtTokenService : IJwtTokenService
         _signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }
 
-    public string GenerateToken(Guid userId, string email, IEnumerable<string> roles)
+    public string GenerateToken(Guid userId, Guid? customerId, string email, IEnumerable<string> roles)
     {
         var claims = new List<Claim>
         {
@@ -35,6 +35,9 @@ public sealed class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Email, email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        if (customerId.HasValue)
+            claims.Add(new Claim("customer_id", customerId.Value.ToString()));
 
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 

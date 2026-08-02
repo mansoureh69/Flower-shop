@@ -8,6 +8,13 @@ namespace SweetFlowerShop.Domain.Tests.Entities;
 public sealed class PaymentTests
 {
     [Fact]
+    public void NewPayment_RejectsEmptyOrderId()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new Payment(Guid.Empty, new Money(100m, "USD"), PaymentMethod.CreditCard));
+    }
+
+    [Fact]
     public void NewPayment_StartsPendingWithoutTransactions()
     {
         var orderId = Guid.NewGuid();
@@ -111,6 +118,15 @@ public sealed class PaymentTests
         Assert.Throws<InvalidOperationException>(() =>
             payment.Refund(new Money(26m, "USD"), "provider-refund-2"));
         Assert.Equal(75m, payment.TotalRefunded);
+    }
+
+    [Fact]
+    public void Refund_RejectsZeroAndMismatchedCurrency()
+    {
+        var payment = CreatePaidPayment();
+
+        Assert.Throws<InvalidOperationException>(() => payment.Refund(new Money(0m, "USD")));
+        Assert.Throws<InvalidOperationException>(() => payment.Refund(new Money(10m, "EUR")));
     }
 
     private static Payment CreatePayment() =>

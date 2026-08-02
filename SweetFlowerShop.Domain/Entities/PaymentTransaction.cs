@@ -19,6 +19,11 @@ public class PaymentTransaction : Entity
 
     internal PaymentTransaction(Guid paymentId, Money amount, TransactionType type, string? providerTransactionId = null)
     {
+        if (paymentId == Guid.Empty)
+            throw new ArgumentException("Payment ID is required.", nameof(paymentId));
+        ArgumentNullException.ThrowIfNull(amount);
+        if (amount.Amount <= 0)
+            throw new ArgumentException("Transaction amount must be greater than zero.", nameof(amount));
         PaymentId = paymentId;
         Amount = amount;
         Type = type;

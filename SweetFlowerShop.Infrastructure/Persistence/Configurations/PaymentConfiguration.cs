@@ -18,6 +18,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Method).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(p => p.CreatedAt).IsRequired();
 
+        builder.HasOne<Order>().WithOne().HasForeignKey<Payment>(p => p.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Value Object: Money
         builder.OwnsOne(p => p.Amount, b => b.ConfigureMoney("Amount", "Currency"));
 

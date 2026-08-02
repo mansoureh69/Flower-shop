@@ -19,7 +19,12 @@ public class Category : AggregateRoot, ISoftDeletable, IAuditable
 
     private Category() { }
 
-    public Category(string name, string description, Guid? parentCategoryId = null, int level = 1)
+    public Category(string name, string description)
+        : this(name, description, null, 1)
+    {
+    }
+
+    private Category(string name, string description, Guid? parentCategoryId, int level)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new EmptyNameException(nameof(Category));
@@ -33,6 +38,17 @@ public class Category : AggregateRoot, ISoftDeletable, IAuditable
         Level = level;
     }
 
+    public static Category CreateChild(string name, string description, Category parent)
+    {
+        ArgumentNullException.ThrowIfNull(parent);
+        if (parent.IsDeleted)
+            throw new InvalidOperationException("Cannot add a child to a deleted category.");
+        if (parent.Level >= InvalidCategoryLevelException.MaxLevel)
+            throw new InvalidCategoryLevelException();
+
+        return new Category(name, description, parent.Id, parent.Level + 1);
+    }
+
     public void UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -43,9 +59,16 @@ public class Category : AggregateRoot, ISoftDeletable, IAuditable
 
     public void UpdateDescription(string description) => Description = description;
 
-    public void MarkAsDeleted()
+    public void MarkAsDeleted(bool hasChildren, bool hasProducts)
     {
+        if (hasChildren)
+            throw new InvalidOperationException("A category with child categories cannot be deleted.");
+        if (hasProducts)
+            throw new InvalidOperationException("A category containing products cannot be deleted.");
         IsDeleted = true;
         DeletedAtUtc = DateTime.UtcNow;
     }
+
+    void ISoftDeletable.MarkAsDeleted() =>
+        throw new InvalidOperationException("Category deletion requires child and product checks.");
 }

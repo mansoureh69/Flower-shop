@@ -70,6 +70,7 @@ public static class DependencyInjection
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddHostedService<OutboxProcessor>();
 
         return services;
     }

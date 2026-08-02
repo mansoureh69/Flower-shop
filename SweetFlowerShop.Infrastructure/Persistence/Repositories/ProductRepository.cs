@@ -13,4 +13,7 @@ public class ProductRepository : Repository<Product>, IProductRepository
 
     public async Task<IReadOnlyList<Product>> GetAvailableAsync(CancellationToken cancellationToken = default)
         => await DbSet.Where(p => p.IsAvailable).Include(p => p.Images).ToListAsync(cancellationToken);
+
+    public Task<bool> AnyByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
+        => DbSet.AnyAsync(p => p.CategoryId == categoryId, cancellationToken);
 }

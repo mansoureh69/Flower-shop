@@ -22,6 +22,7 @@ public class PaymentTransactionConfiguration : IEntityTypeConfiguration<PaymentT
 
         // Index for provider reconciliation queries
         builder.HasIndex(t => t.ProviderTransactionId)
+            .IsUnique()
             .HasFilter("\"ProviderTransactionId\" IS NOT NULL")
             .HasDatabaseName("IX_PaymentTransactions_ProviderId");
     }

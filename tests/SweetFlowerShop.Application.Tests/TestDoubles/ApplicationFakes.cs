@@ -6,13 +6,15 @@ namespace SweetFlowerShop.Application.Tests.TestDoubles;
 
 internal sealed class StubCurrentUserService : ICurrentUserService
 {
-    public StubCurrentUserService(Guid? userId)
+    public StubCurrentUserService(Guid? customerId)
     {
-        UserId = userId;
+        CustomerId = customerId;
+        UserId = customerId.HasValue ? Guid.NewGuid() : null;
     }
 
     public Guid? UserId { get; }
-    public string? UserName => UserId is null ? null : "customer@example.com";
+    public Guid? CustomerId { get; }
+    public string? UserName => CustomerId is null ? null : "customer@example.com";
 }
 
 internal abstract class RepositoryFake<T> : IRepository<T> where T : AggregateRoot
@@ -60,6 +62,9 @@ internal sealed class ProductRepositoryFake(params Product[] products)
     public Task<IReadOnlyList<Product>> GetAvailableAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<Product>>(
             _products.Values.Where(product => product.IsAvailable).ToList());
+
+    public Task<bool> AnyByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_products.Values.Any(product => product.CategoryId == categoryId));
 }
 
 internal sealed class OrderRepositoryFake : RepositoryFake<Order>, IOrderRepository

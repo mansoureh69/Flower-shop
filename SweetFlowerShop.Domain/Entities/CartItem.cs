@@ -11,22 +11,28 @@ public class CartItem : Entity
 {
     public Guid CartId { get; private set; }
     public Guid ProductId { get; private set; }
-    public Product? Product { get; private set; }
+    public string ProductName { get; private set; } = string.Empty;
     public int Quantity { get; private set; } = 0;
     public Money SnapshotPrice { get; private set; } = null!;
 
     private CartItem() { }
 
-    internal CartItem(Guid cartId, Product product, int quantity)
+    internal CartItem(Guid cartId, Guid productId, string productName, Money price, int quantity)
     {
         if (quantity <= 0)
             throw new Exceptions.InvalidQuantityException();
 
         CartId = cartId;
-        ProductId = product.Id;
-        Product = product;
+        if (productId == Guid.Empty)
+            throw new ArgumentException("Product ID is required.", nameof(productId));
+        if (string.IsNullOrWhiteSpace(productName))
+            throw new Exceptions.EmptyNameException(nameof(ProductName));
+        ArgumentNullException.ThrowIfNull(price);
+
+        ProductId = productId;
+        ProductName = productName;
         Quantity = quantity;
-        SnapshotPrice = product.Price;
+        SnapshotPrice = price;
     }
 
     internal void IncreaseQuantity(int amount)

@@ -31,6 +31,10 @@ public class Product : AggregateRoot, ISoftDeletable, IAuditable
         if (string.IsNullOrWhiteSpace(name))
             throw new EmptyNameException(nameof(Product));
 
+        if (categoryId == Guid.Empty)
+            throw new ArgumentException("Category ID is required.", nameof(categoryId));
+        ArgumentNullException.ThrowIfNull(price);
+
         if (price.Amount <= 0)
             throw new InvalidPriceException();
 
@@ -58,7 +62,12 @@ public class Product : AggregateRoot, ISoftDeletable, IAuditable
         Price = newPrice;
     }
 
-    public void ChangeCategory(Guid categoryId) => CategoryId = categoryId;
+    public void ChangeCategory(Guid categoryId)
+    {
+        if (categoryId == Guid.Empty)
+            throw new ArgumentException("Category ID is required.", nameof(categoryId));
+        CategoryId = categoryId;
+    }
 
     public void Activate() => IsAvailable = true;
 

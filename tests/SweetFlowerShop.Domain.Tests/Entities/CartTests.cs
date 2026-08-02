@@ -12,7 +12,7 @@ public sealed class CartTests
         var product = CreateProduct(20m);
         var cart = new Cart(Guid.NewGuid());
 
-        cart.AddItem(product.Id, product, 2);
+        AddProduct(cart, product, 2);
         product.ChangePrice(new Money(30m, "USD"));
 
         var item = Assert.Single(cart.Items);
@@ -26,8 +26,8 @@ public sealed class CartTests
         var product = CreateProduct();
         var cart = new Cart(Guid.NewGuid());
 
-        cart.AddItem(product.Id, product, 1);
-        cart.AddItem(product.Id, product, 2);
+        AddProduct(cart, product, 1);
+        AddProduct(cart, product, 2);
 
         var item = Assert.Single(cart.Items);
         Assert.Equal(3, item.Quantity);
@@ -41,7 +41,7 @@ public sealed class CartTests
         var product = CreateProduct();
         var cart = new Cart(Guid.NewGuid());
 
-        Assert.Throws<InvalidQuantityException>(() => cart.AddItem(product.Id, product, quantity));
+        Assert.Throws<InvalidQuantityException>(() => AddProduct(cart, product, quantity));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class CartTests
     {
         var product = CreateProduct();
         var cart = new Cart(Guid.NewGuid());
-        cart.AddItem(product.Id, product, 1);
+        AddProduct(cart, product, 1);
 
         cart.UpdateItemQuantity(product.Id, 4);
 
@@ -70,8 +70,8 @@ public sealed class CartTests
         var first = CreateProduct();
         var second = CreateProduct();
         var cart = new Cart(Guid.NewGuid());
-        cart.AddItem(first.Id, first, 1);
-        cart.AddItem(second.Id, second, 1);
+        AddProduct(cart, first, 1);
+        AddProduct(cart, second, 1);
 
         cart.RemoveItem(first.Id);
         Assert.Equal(second.Id, Assert.Single(cart.Items).ProductId);
@@ -82,4 +82,7 @@ public sealed class CartTests
 
     private static Product CreateProduct(decimal price = 20m) =>
         new("Rose Bouquet", "Fresh roses", new Money(price, "USD"), Guid.NewGuid());
+
+    private static void AddProduct(Cart cart, Product product, int quantity) =>
+        cart.AddItem(product.Id, product.Name, product.Price, quantity);
 }

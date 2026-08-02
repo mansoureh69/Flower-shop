@@ -30,6 +30,9 @@ public class Payment : AggregateRoot, IAuditable
 
     public Payment(Guid orderId, Money amount, PaymentMethod method)
     {
+        if (orderId == Guid.Empty)
+            throw new ArgumentException("Order ID is required.", nameof(orderId));
+        ArgumentNullException.ThrowIfNull(amount);
         if (amount.Amount <= 0)
             throw new InvalidOperationException("Payment amount must be greater than zero.");
 
@@ -63,6 +66,15 @@ public class Payment : AggregateRoot, IAuditable
     {
         if (Status != PaymentStatus.Paid)
             throw new InvalidOperationException("Only paid payments can be refunded.");
+
+        ArgumentNullException.ThrowIfNull(refundAmount);
+        if (refundAmount.Amount <= 0)
+            throw new InvalidOperationException("Refund amount must be greater than zero.");
+        if (refundAmount.Currency != Amount.Currency)
+            throw new InvalidOperationException("Refund currency must match payment currency.");
+        if (!string.IsNullOrWhiteSpace(providerTransactionId)
+            && _transactions.Any(t => t.ProviderTransactionId == providerTransactionId))
+            throw new InvalidOperationException("Provider transaction has already been recorded.");
 
         if (refundAmount.Amount + TotalRefunded > Amount.Amount)
             throw new InvalidOperationException("Refund amount exceeds paid amount.");

@@ -18,6 +18,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.IsAvailable).HasDefaultValue(true);
         builder.Property(p => p.CreatedAt).IsRequired();
 
+        builder.HasOne<Category>().WithMany().HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Value Object: Money (owned type — stored as columns in Products table)
         builder.OwnsOne(p => p.Price, b => b.ConfigureMoney("Price", "Currency"));
 

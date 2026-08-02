@@ -13,6 +13,7 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
 
         builder.Property(i => i.CartId).IsRequired();
         builder.Property(i => i.ProductId).IsRequired();
+        builder.Property(i => i.ProductName).IsRequired().HasMaxLength(200);
         builder.Property(i => i.Quantity).IsRequired();
 
         // Configure Money value object for snapshotted price

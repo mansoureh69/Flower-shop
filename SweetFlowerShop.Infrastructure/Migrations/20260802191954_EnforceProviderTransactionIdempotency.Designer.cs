@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SweetFlowerShop.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using SweetFlowerShop.Infrastructure.Persistence;
 namespace SweetFlowerShop.Infrastructure.Migrations
 {
     [DbContext(typeof(FlowerShopDbContext))]
-    partial class FlowerShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802191954_EnforceProviderTransactionIdempotency")]
+    partial class EnforceProviderTransactionIdempotency
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -652,9 +655,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId")
-                        .IsUnique();
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -748,15 +748,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Cart", b =>
-                {
-                    b.HasOne("SweetFlowerShop.Domain.Entities.Customer", null)
-                        .WithOne()
-                        .HasForeignKey("SweetFlowerShop.Domain.Entities.Cart", "CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("SweetFlowerShop.Domain.Entities.CartItem", b =>
                 {
                     b.HasOne("SweetFlowerShop.Domain.Entities.Cart", null)
@@ -764,14 +755,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Category", b =>
-                {
-                    b.HasOne("SweetFlowerShop.Domain.Entities.Category", null)
-                        .WithMany()
-                        .HasForeignKey("ParentCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Customer", b =>
@@ -843,12 +826,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
 
             modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("SweetFlowerShop.Domain.Entities.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.OwnsOne("SweetFlowerShop.Domain.ValueObjects.DeliveryInfo", "DeliveryInfo", b1 =>
                         {
                             b1.Property<Guid>("OrderId")
@@ -943,12 +920,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
 
             modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Payment", b =>
                 {
-                    b.HasOne("SweetFlowerShop.Domain.Entities.Order", null)
-                        .WithOne()
-                        .HasForeignKey("SweetFlowerShop.Domain.Entities.Payment", "OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.OwnsOne("SweetFlowerShop.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
                             b1.Property<Guid>("PaymentId")
@@ -1015,12 +986,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
 
             modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Product", b =>
                 {
-                    b.HasOne("SweetFlowerShop.Domain.Entities.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.OwnsOne("SweetFlowerShop.Domain.ValueObjects.Money", "Price", b1 =>
                         {
                             b1.Property<Guid>("ProductId")
@@ -1056,14 +1021,6 @@ namespace SweetFlowerShop.Infrastructure.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SweetFlowerShop.Infrastructure.Identity.ApplicationUser", b =>
-                {
-                    b.HasOne("SweetFlowerShop.Domain.Entities.Customer", null)
-                        .WithOne()
-                        .HasForeignKey("SweetFlowerShop.Infrastructure.Identity.ApplicationUser", "CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("SweetFlowerShop.Domain.Entities.Cart", b =>

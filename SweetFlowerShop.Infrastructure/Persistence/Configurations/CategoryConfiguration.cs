@@ -17,6 +17,9 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Level).IsRequired();
         builder.Property(c => c.ParentCategoryId);
 
+        builder.HasOne<Category>().WithMany().HasForeignKey(c => c.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Self-referencing hierarchy
         builder.HasIndex(c => c.ParentCategoryId);
 

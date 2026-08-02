@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SweetFlowerShop.Application.Interfaces;
 using SweetFlowerShop.Domain.Common;
+using System.Text.Json;
 
 namespace SweetFlowerShop.Infrastructure.Persistence;
 
@@ -12,24 +13,17 @@ namespace SweetFlowerShop.Infrastructure.Persistence;
 /// 4. Dispatch domain events (only after successful commit)
 /// </summary>
 public sealed class UnitOfWork(
-    FlowerShopDbContext context,
-    IDomainEventDispatcher domainEventDispatcher) : IUnitOfWork
+    FlowerShopDbContext context) : IUnitOfWork
 {
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // Step 1 & 2: Harvest and clear domain events BEFORE save
         var aggregates = GetAggregatesWithDomainEvents();
-        var domainEvents = aggregates.SelectMany(a => a.DomainEvents).ToList();
+        AddOutboxMessages(aggregates.SelectMany(a => a.DomainEvents));
 
         // Step 3: Persist — interceptors (SoftDelete → Audit) fire inside
         var result = await context.SaveChangesAsync(cancellationToken);
         aggregates.ForEach(a => a.ClearDomainEvents());
-
-        // Step 4: Dispatch events AFTER successful commit
-        if (domainEvents.Count > 0)
-        {
-            await domainEventDispatcher.DispatchAsync(domainEvents, cancellationToken);
-        }
 
         return result;
     }
@@ -46,16 +40,12 @@ public sealed class UnitOfWork(
 
             await operation(ct);
             var aggregates = GetAggregatesWithDomainEvents();
-            var domainEvents = aggregates.SelectMany(a => a.DomainEvents).ToList();
+            AddOutboxMessages(aggregates.SelectMany(a => a.DomainEvents));
             await context.SaveChangesAsync(ct);
 
             await transaction.CommitAsync(ct);
 
             aggregates.ForEach(a => a.ClearDomainEvents());
-            if (domainEvents.Count > 0)
-            {
-                await domainEventDispatcher.DispatchAsync(domainEvents, ct);
-            }
         }, cancellationToken);
     }
 
@@ -68,5 +58,20 @@ public sealed class UnitOfWork(
             .ToList();
 
         return aggregates;
+    }
+
+    private void AddOutboxMessages(IEnumerable<IDomainEvent> domainEvents)
+    {
+        foreach (var domainEvent in domainEvents)
+        {
+            var type = domainEvent.GetType();
+            context.OutboxMessages.Add(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                OccurredOnUtc = domainEvent.OccurredOn,
+                Type = type.AssemblyQualifiedName!,
+                Payload = JsonSerializer.Serialize(domainEvent, type)
+            });
+        }
     }
 }
