@@ -1,0 +1,65 @@
+<header class="site-header" id="top">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <a class="announcement" href="#fresh-picks">
+    <span>Seasonal flowers, thoughtfully gathered</span>
+    <strong>See fresh picks</strong>
+  </a>
+
+  <div class="navigation-shell">
+    <a class="wordmark" href="#top" aria-label="Sweet Flower Shop home">
+      <span class="wordmark__primary">Sweet</span>
+      <span class="wordmark__secondary">Flower Shop</span>
+    </a>
+
+    <nav class="desktop-navigation" aria-label="Primary navigation">
+      @for (item of navigationItems(); track item.fragment) {
+        <a [attr.href]="'#' + item.fragment">{{ item.label }}</a>
+      }
+    </nav>
+
+    <a class="header-cta" href="#fresh-picks">Find a bouquet</a>
+
+    <button
+      #menuButton
+      class="menu-button"
+      type="button"
+      aria-label="Open navigation menu"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="mobile-navigation"
+      (click)="openMenu()"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <dialog
+    #menuDialog
+    class="mobile-navigation"
+    id="mobile-navigation"
+    aria-labelledby="mobile-navigation-title"
+    (cancel)="handleDialogCancelled($event)"
+    (close)="handleDialogClosed()"
+    (click)="closeFromBackdrop($event)"
+  >
+    <div class="mobile-navigation__panel">
+      <div class="mobile-navigation__topline">
+        <p id="mobile-navigation-title">Explore the shop</p>
+        <button type="button" aria-label="Close navigation menu" (click)="closeMenu()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <nav aria-label="Mobile navigation">
+        @for (item of navigationItems(); track item.fragment; let index = $index) {
+          <a [attr.href]="'#' + item.fragment" (click)="closeMenu()">
+            <span aria-hidden="true">0{{ index + 1 }}</span>
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+    </div>
+  </dialog>
+</header>

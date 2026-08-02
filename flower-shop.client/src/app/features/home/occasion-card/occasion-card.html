@@ -1,0 +1,15 @@
+<article class="occasion-card">
+  <div class="occasion-card__image">
+    <img
+      [ngSrc]="content().image"
+      fill
+      sizes="(max-width: 600px) 76vw, (max-width: 900px) 44vw, 22vw"
+      [alt]="content().imageAlt"
+    />
+  </div>
+  <div class="occasion-card__content">
+    <p>{{ content().eyebrow }}</p>
+    <h3>{{ content().title }}</h3>
+    <span>{{ content().description }}</span>
+  </div>
+</article>

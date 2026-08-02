@@ -1,0 +1,173 @@
+:host {
+  display: block;
+  background: var(--color-canvas);
+}
+
+.fresh-picks {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: clamp(90px, 10vw, 150px) var(--page-gutter);
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  align-items: end;
+  gap: 50px;
+  margin-bottom: 58px;
+}
+
+.eyebrow,
+.state-card__eyebrow {
+  margin: 0 0 18px;
+  color: var(--color-plum);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+h2 {
+  max-width: 820px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  text-wrap: balance;
+}
+
+.section-heading > p {
+  max-width: 400px;
+  margin: 0;
+  color: var(--color-body);
+  line-height: 1.7;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 30px);
+}
+
+.skeleton-card span {
+  display: block;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #e5d7d0;
+}
+
+.skeleton-card span::after {
+  display: block;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 52%), transparent);
+  content: '';
+  animation: shimmer 1.5s infinite;
+  transform: translateX(-120%);
+}
+
+.skeleton-card__image {
+  aspect-ratio: 0.8;
+}
+
+.skeleton-card__line {
+  width: 55%;
+  height: 12px;
+  margin-top: 12px;
+}
+
+.skeleton-card__line--wide {
+  width: 82%;
+  height: 18px;
+  margin-top: 20px;
+}
+
+.state-card {
+  display: flex;
+  min-height: 360px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 48px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  background: rgb(255 250 246 / 58%);
+  text-align: center;
+}
+
+.state-card--error {
+  border-color: rgb(112 36 61 / 35%);
+}
+
+.state-card h3 {
+  max-width: 620px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.state-card > p:not(.state-card__eyebrow) {
+  max-width: 540px;
+  margin: 18px 0 0;
+  color: var(--color-body);
+  line-height: 1.7;
+}
+
+.state-card button {
+  min-height: 48px;
+  margin-top: 28px;
+  padding: 10px 24px;
+  border: 1px solid var(--color-plum);
+  border-radius: 999px;
+  color: var(--color-white);
+  background: var(--color-plum);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (max-width: 900px) {
+  .section-heading {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 50px;
+  }
+}
+
+@media (max-width: 560px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-card span::after {
+    animation: none;
+  }
+}

@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  color: var(--color-white);
+  background: var(--color-sage);
+}
+
+.story {
+  display: grid;
+  max-width: var(--content-width);
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  align-items: center;
+  gap: clamp(60px, 9vw, 130px);
+  margin: 0 auto;
+  padding: clamp(80px, 10vw, 150px) var(--page-gutter);
+}
+
+.story__visual {
+  position: relative;
+  max-width: 660px;
+  min-height: 660px;
+}
+
+.story__visual > img {
+  display: block;
+  width: 85%;
+  height: 620px;
+  margin-left: auto;
+  border-radius: 50% 50% 16px 16px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.story__inset {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 8px solid var(--color-sage);
+  border-radius: 50%;
+}
+
+.story__inset img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eyebrow {
+  margin: 0 0 22px;
+  color: #e8ced4;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.story__content h2 {
+  max-width: 700px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 6vw, 6.2rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+
+.story__content p:not(.eyebrow) {
+  max-width: 590px;
+  margin: 24px 0 0;
+  color: rgb(255 255 255 / 84%);
+  line-height: 1.75;
+}
+
+.story__content .story__lead {
+  margin-top: 34px;
+  color: var(--color-white);
+  font-size: clamp(1.08rem, 1.5vw, 1.3rem);
+}
+
+.story__content a {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 18px;
+  margin-top: 34px;
+  border-bottom: 1px solid currentcolor;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.story__content a:focus-visible {
+  outline-color: var(--color-white);
+}
+
+@media (max-width: 800px) {
+  .story {
+    grid-template-columns: 1fr;
+  }
+
+  .story__visual {
+    min-height: 580px;
+  }
+
+  .story__visual > img {
+    height: 540px;
+  }
+}
+
+@media (max-width: 480px) {
+  .story__visual {
+    min-height: 440px;
+  }
+
+  .story__visual > img {
+    width: 92%;
+    height: 410px;
+  }
+}

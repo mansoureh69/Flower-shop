@@ -1,4 +1,5 @@
-:host {
+:host,
+main {
   display: block;
   min-width: 0;
 }

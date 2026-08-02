@@ -6,6 +6,24 @@
   font-display: swap;
 }
 
+:root {
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Outfit', Arial, sans-serif;
+  --color-ink: #201a1c;
+  --color-body: #4e4246;
+  --color-canvas: #f7efe9;
+  --color-paper: #fffaf6;
+  --color-plum: #70243d;
+  --color-plum-dark: #51172b;
+  --color-rose: #dba2ad;
+  --color-sage: #61705e;
+  --color-border: #d9c9c1;
+  --color-white: #fff;
+  --shadow-soft: 0 18px 50px rgb(54 35 42 / 12%);
+  --page-gutter: clamp(20px, 4vw, 64px);
+  --content-width: 1440px;
+}
+
 @font-face {
   font-family: 'Outfit';
   src: url('/assets/fonts/outfit-bold.ttf') format('truetype');
@@ -22,20 +40,50 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 140px;
 }
 
 body {
   min-width: 320px;
   margin: 0;
-  background: #fff;
-  font-family: 'Outfit', Arial, sans-serif;
+  overflow-x: hidden;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 button,
-a {
+a,
+input,
+textarea,
+select {
   font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--color-plum);
+  outline-offset: 4px;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  color: var(--color-white);
+  background: var(--color-plum);
 }
 
 @media (prefers-reduced-motion: reduce) {

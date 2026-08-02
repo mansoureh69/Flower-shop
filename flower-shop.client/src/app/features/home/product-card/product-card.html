@@ -1,0 +1,24 @@
+<article class="product-card">
+  <div class="product-card__image">
+    <img
+      [src]="imageUrl()"
+      [alt]="product().name + ' flower arrangement'"
+      width="640"
+      height="800"
+      loading="lazy"
+      decoding="async"
+      (error)="useFallbackImage($event)"
+    />
+    <span>Fresh pick</span>
+  </div>
+
+  <div class="product-card__content">
+    <div>
+      <h3>{{ product().name }}</h3>
+      <p>{{ product().description }}</p>
+    </div>
+    <p class="product-card__price">
+      {{ product().price | currency: product().currency : 'symbol' : '1.0-2' }}
+    </p>
+  </div>
+</article>

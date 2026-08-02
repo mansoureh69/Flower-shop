@@ -1,0 +1,43 @@
+<section class="fresh-picks" id="fresh-picks" aria-labelledby="fresh-picks-title">
+  <header class="section-heading">
+    <div>
+      <p class="eyebrow">Fresh from the shop</p>
+      <h2 id="fresh-picks-title">Flowers worth making room for.</h2>
+    </div>
+    <p>
+      A rotating edit of available bouquets, chosen for beautiful color, texture, and feeling.
+    </p>
+  </header>
+
+  @if (productsApi.isLoading()) {
+    <p class="visually-hidden" role="status">Arranging the latest flower picks.</p>
+    <div class="product-grid" aria-hidden="true">
+      @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+        <div class="skeleton-card">
+          <span class="skeleton-card__image"></span>
+          <span class="skeleton-card__line skeleton-card__line--wide"></span>
+          <span class="skeleton-card__line"></span>
+        </div>
+      }
+    </div>
+  } @else if (productsApi.error()) {
+    <div class="state-card state-card--error" role="alert">
+      <p class="state-card__eyebrow">The garden gate is taking a moment</p>
+      <h3>We couldn&rsquo;t load today&rsquo;s fresh picks.</h3>
+      <p>The rest of the shop is still here to explore. Try the flowers again when you&rsquo;re ready.</p>
+      <button type="button" (click)="reloadProducts()">Try again</button>
+    </div>
+  } @else if (featuredProducts().length > 0) {
+    <div class="product-grid">
+      @for (product of featuredProducts(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  } @else {
+    <div class="state-card" role="status">
+      <p class="state-card__eyebrow">New stems are on their way</p>
+      <h3>Fresh picks are being arranged.</h3>
+      <p>Come back soon to see the next small, thoughtful collection.</p>
+    </div>
+  }
+</section>

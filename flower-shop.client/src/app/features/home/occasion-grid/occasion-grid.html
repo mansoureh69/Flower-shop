@@ -1,0 +1,21 @@
+<section class="occasions" id="occasions" aria-labelledby="occasions-title">
+  <header class="section-heading">
+    <div>
+      <p class="eyebrow">Shop the feeling</p>
+      <h2 id="occasions-title">A bouquet for every lovely reason.</h2>
+    </div>
+    <p class="section-heading__intro">
+      Start with the moment you want to celebrate. We&rsquo;ll help the flowers say the rest.
+    </p>
+  </header>
+
+  <div
+    class="occasion-grid"
+    aria-label="Flower occasions. Scroll horizontally on smaller screens to explore."
+    tabindex="0"
+  >
+    @for (occasion of occasions(); track occasion.id) {
+      <app-occasion-card [content]="occasion" />
+    }
+  </div>
+</section>

@@ -1,0 +1,36 @@
+<footer class="site-footer">
+  <div class="site-footer__lead">
+    <div>
+      <p class="site-footer__eyebrow">Send something meaningful</p>
+      <h2>Flowers have a lovely way of saying what words cannot.</h2>
+    </div>
+    <a href="#fresh-picks">Find a bouquet <span aria-hidden="true">&rarr;</span></a>
+  </div>
+
+  <div class="site-footer__body">
+    <a class="footer-wordmark" href="#top" aria-label="Sweet Flower Shop home">
+      <span>Sweet</span>
+      Flower Shop
+    </a>
+
+    <div class="footer-column">
+      <h3>Explore</h3>
+      <nav aria-label="Footer navigation">
+        @for (item of navigationItems(); track item.fragment) {
+          <a [attr.href]="'#' + item.fragment">{{ item.label }}</a>
+        }
+      </nav>
+    </div>
+
+    <div class="footer-column">
+      <h3>Visit</h3>
+      <p>Online bouquets made for thoughtful gifting.</p>
+      <a href="mailto:hello@sweetflowershop.example">hello&#64;sweetflowershop.example</a>
+    </div>
+  </div>
+
+  <div class="site-footer__legal">
+    <p>&copy; {{ currentYear }} Sweet Flower Shop. Portfolio project.</p>
+    <p>Designed with care for people, petals, and every screen size.</p>
+  </div>
+</footer>

@@ -1,0 +1,21 @@
+<section class="testimonials" aria-labelledby="testimonials-title">
+  <header>
+    <p>Kind words</p>
+    <h2 id="testimonials-title">The feeling lasts beyond the flowers.</h2>
+  </header>
+
+  <div class="testimonial-grid">
+    @for (testimonial of testimonials(); track testimonial.id) {
+      <article>
+        <p class="rating">
+          <span class="visually-hidden">5 out of 5 stars</span>
+          <span aria-hidden="true">&#9733; &#9733; &#9733; &#9733; &#9733;</span>
+        </p>
+        <h3>{{ testimonial.headline }}</h3>
+        <blockquote>&ldquo;{{ testimonial.quote }}&rdquo;</blockquote>
+        <p class="customer">{{ testimonial.customerName }}</p>
+      </article>
+    }
+  </div>
+  <p class="sample-note">Sample testimonials created for this portfolio experience.</p>
+</section>
