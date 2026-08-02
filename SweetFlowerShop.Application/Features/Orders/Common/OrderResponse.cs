@@ -16,5 +16,6 @@ public record OrderItemResponse(
     Guid ProductId,
     string ProductName,
     decimal UnitPrice,
+    string Currency,
     int Quantity,
     decimal TotalPrice);

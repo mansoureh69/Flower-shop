@@ -35,7 +35,17 @@ public class Order : AggregateRoot, IAuditable
         Notes = notes;
     }
 
-    public void AddItem(Guid productId, Product product, int quantity, string? notes = null)
+    /// <summary>
+    /// Adds an item to the order by snapshotting product data at order time.
+    /// If an item with the same ProductId and UnitPrice.Currency already exists, combines their quantities.
+    /// Otherwise, creates a new OrderItem.
+    /// </summary>
+    public void AddItem(
+        Guid productId,
+        string productName,
+        Money unitPrice,
+        int quantity,
+        string? notes = null)
     {
         if (Status != OrderStatus.Pending)
             throw new InvalidOrderStateException("add items to", Status.ToString());
@@ -43,14 +53,19 @@ public class Order : AggregateRoot, IAuditable
         if (quantity <= 0)
             throw new InvalidQuantityException();
 
-        var existing = _items.FirstOrDefault(i => i.ProductId == productId);
+        // Check for duplicate: same ProductId AND same currency (price snapshot)
+        var existing = _items.FirstOrDefault(
+            i => i.ProductId == productId && i.UnitPrice.Currency == unitPrice.Currency);
+
         if (existing is not null)
         {
+            // Combine quantities for the same product and currency
             existing.UpdateQuantity(existing.Quantity + quantity);
         }
         else
         {
-            _items.Add(new OrderItem(Id, product, quantity, notes));
+            // Create new item with the snapshot
+            _items.Add(new OrderItem(Id, productId, productName, unitPrice, quantity, notes));
         }
     }
 
