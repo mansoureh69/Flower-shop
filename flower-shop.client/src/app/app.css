@@ -80,7 +80,9 @@
   letter-spacing: 0.02em;
   text-decoration: none;
   text-transform: uppercase;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .accent-link img {
@@ -112,6 +114,7 @@
 }
 
 .flower-carousel__item {
+  position: relative;
   width: 200px;
   height: 200px;
   flex: 0 0 200px;
@@ -167,7 +170,7 @@
   display: block;
   width: 100%;
   height: 1px;
-  object-fit: fill;
+  background: var(--divider);
 }
 
 .services__list {
@@ -229,6 +232,7 @@
 }
 
 .feature-image {
+  position: relative;
   width: 100%;
   height: 400px;
   margin: 0;

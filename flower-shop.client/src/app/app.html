@@ -6,59 +6,78 @@
     </div>
 
     <a class="accent-link" href="#services">
-      <img src="/assets/flowers/button-dot.svg" width="4" height="4" alt="" aria-hidden="true" />
+      <img ngSrc="/assets/flowers/button-dot.svg" width="4" height="4" alt="" aria-hidden="true" />
       <span>Explore</span>
     </a>
   </section>
 
-  <section class="flower-carousel" aria-label="Flower gallery" tabindex="0">
-    <figure class="flower-carousel__item" *ngFor="let image of carouselImages; let index = index">
-      <img
-        [src]="image.src"
-        [alt]="image.alt + ' — image ' + (index + 1) + ' of ' + carouselImages.length"
-        width="200"
-        height="200"
-      />
-    </figure>
+  <section
+    class="flower-carousel"
+    aria-label="Flower gallery. Scroll horizontally to see more arrangements."
+    tabindex="0"
+  >
+    @for (image of carouselImages(); track image.src; let index = $index) {
+      <figure class="flower-carousel__item">
+        <img
+          [ngSrc]="image.src"
+          fill
+          sizes="(max-width: 600px) 46vw, (max-width: 1000px) 20vw, 14vw"
+          [alt]="image.alt + ' — image ' + (index + 1) + ' of ' + carouselImageCount()"
+        />
+      </figure>
+    }
   </section>
 
   <section class="services" id="services" aria-labelledby="services-title">
     <header class="services__header">
       <h2 id="services-title">What we do</h2>
       <p>We bring a touch of that simple magic into your world.</p>
-      <img class="divider" src="/assets/flowers/divider.svg" alt="" aria-hidden="true" />
+      <span class="divider" aria-hidden="true"></span>
     </header>
 
     <ol class="services__list">
-      <li class="service" *ngFor="let service of services">
-        <p class="service__number" aria-hidden="true">{{ service.number }}</p>
+      @for (service of services(); track service.number) {
+        <li class="service">
+          <p class="service__number" aria-hidden="true">{{ service.number }}</p>
 
-        <div class="service__image" [class]="'service__image ' + service.imageClass">
-          <img [src]="service.image" [alt]="service.alt" width="145" height="145" />
-        </div>
+          <div
+            class="service__image"
+            [class.service__image--rounded]="service.imageClass === 'service__image--rounded'"
+            [class.service__image--soft]="service.imageClass === 'service__image--soft'"
+          >
+            <img [ngSrc]="service.image" [alt]="service.alt" width="145" height="145" />
+          </div>
 
-        <div class="service__copy">
-          <h3>{{ service.title }}</h3>
-          <p>{{ service.description }}</p>
-        </div>
+          <div class="service__copy">
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.description }}</p>
+          </div>
 
-        <img class="divider" src="/assets/flowers/service-divider.svg" alt="" aria-hidden="true" />
-      </li>
+          <span class="divider" aria-hidden="true"></span>
+        </li>
+      }
     </ol>
   </section>
 
   <figure class="feature-image">
-    <img src="/assets/flowers/purple-flowers.png" alt="Delicate purple flowers" />
+    <img
+      ngSrc="/assets/flowers/purple-flowers.png"
+      fill
+      sizes="100vw"
+      alt="Delicate purple flowers"
+    />
   </figure>
 
   <section class="contact" aria-labelledby="contact-title">
     <div class="section-heading section-heading--contact">
       <p class="eyebrow">Work with us</p>
-      <h2 id="contact-title">Discover how we can add a touch of natural beauty to your next event.</h2>
+      <h2 id="contact-title">
+        Discover how we can add a touch of natural beauty to your next event.
+      </h2>
     </div>
 
     <a class="accent-link" href="mailto:hello@ourblooms.com">
-      <img src="/assets/flowers/button-dot.svg" width="4" height="4" alt="" aria-hidden="true" />
+      <img ngSrc="/assets/flowers/button-dot.svg" width="4" height="4" alt="" aria-hidden="true" />
       <span>Inquire</span>
     </a>
   </section>

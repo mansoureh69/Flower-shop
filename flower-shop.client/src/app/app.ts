@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
+import { Component, computed, signal } from '@angular/core';
 
 interface CarouselImage {
   readonly src: string;
@@ -16,27 +17,29 @@ interface Service {
 
 @Component({
   selector: 'app-root',
+  imports: [NgOptimizedImage],
   templateUrl: './app.html',
-  standalone: false,
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
-  readonly carouselImages: readonly CarouselImage[] = [
+  protected readonly carouselImages = signal<readonly CarouselImage[]>([
     { src: '/assets/flowers/carousel-pink-roses.png', alt: 'Pink roses' },
     { src: '/assets/flowers/carousel-white-rose.png', alt: 'White rose' },
     { src: '/assets/flowers/carousel-pink-blooms.png', alt: 'Pink rose blooms' },
     { src: '/assets/flowers/carousel-white-tulips.png', alt: 'White tulips' },
-    { src: '/assets/flowers/carousel-orchid.png', alt: 'Orchid' }
-  ];
+    { src: '/assets/flowers/carousel-orchid.png', alt: 'Orchid' },
+  ]);
 
-  readonly services: readonly Service[] = [
+  protected readonly carouselImageCount = computed(() => this.carouselImages().length);
+
+  protected readonly services = signal<readonly Service[]>([
     {
       number: '1',
       title: 'Floral installations',
       description: 'Living art for homes, businesses, and events.',
       image: '/assets/flowers/service-installations.png',
       alt: 'Person carrying a bouquet of flowers',
-      imageClass: 'service__image--rounded'
+      imageClass: 'service__image--rounded',
     },
     {
       number: '2',
@@ -45,7 +48,7 @@ export class App {
         'Whether it’s a private retreat or a public space, we craft floral experiences that bloom beyond expectations.',
       image: '/assets/flowers/service-native-arrangements.png',
       alt: 'Florist making a bouquet',
-      imageClass: 'service__image--soft'
+      imageClass: 'service__image--soft',
     },
     {
       number: '3',
@@ -54,7 +57,7 @@ export class App {
         'Your vision, our blooms. We build arrangements that are both personal and exquisitely simple. Whether it’s a private retreat or a public space, we craft floral experiences that bloom beyond expectations.',
       image: '/assets/flowers/service-custom-concepts.png',
       alt: 'Pink tulips in a vase',
-      imageClass: 'service__image--rounded'
-    }
-  ];
+      imageClass: 'service__image--rounded',
+    },
+  ]);
 }
