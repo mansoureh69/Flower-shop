@@ -96,23 +96,28 @@ public static class ValueObjectMappingExtensions
     {
         builder.Property(x => x.RecipientName)
             .HasColumnName($"{columnPrefix}RecipientName")
-            .HasMaxLength(200);
+            .HasMaxLength(200)
+            .IsRequired();
 
         builder.Property(x => x.RecipientPhone)
             .HasColumnName($"{columnPrefix}RecipientPhone")
-            .HasMaxLength(20);
+            .HasMaxLength(20)
+            .IsRequired();
 
         builder.Property(x => x.Street)
             .HasColumnName($"{columnPrefix}Street")
-            .HasMaxLength(200);
+            .HasMaxLength(200)
+            .IsRequired();
 
         builder.Property(x => x.City)
             .HasColumnName($"{columnPrefix}City")
-            .HasMaxLength(100);
+            .HasMaxLength(100)
+            .IsRequired();
 
         builder.Property(x => x.ZipCode)
             .HasColumnName($"{columnPrefix}ZipCode")
-            .HasMaxLength(20);
+            .HasMaxLength(20)
+            .IsRequired();
 
         builder.Property(x => x.ScheduledDate)
             .HasColumnName($"{columnPrefix}ScheduledDate");

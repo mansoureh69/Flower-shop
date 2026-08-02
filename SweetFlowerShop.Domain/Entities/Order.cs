@@ -7,10 +7,8 @@ using SweetFlowerShop.Domain.ValueObjects;
 namespace SweetFlowerShop.Domain.Entities;
 
 /// <summary>
-/// Aggregate Root - Order represents a confirmed purchase intent.
-/// Dependent entities: OrderItem
-/// Payment is a SEPARATE aggregate — Order does not track PaymentStatus.
-/// All item prices are snapshotted at order time.
+/// Historical purchase and fulfilment record.
+/// Payment is a separate aggregate and may confirm an order only after provider verification.
 /// </summary>
 public class Order : AggregateRoot, IAuditable
 {
@@ -19,7 +17,7 @@ public class Order : AggregateRoot, IAuditable
     public Guid CustomerId { get; private set; }
     public DateTime OrderDate { get; private set; }
     public OrderStatus Status { get; private set; }
-    public DeliveryInfo? DeliveryInfo { get; private set; }
+    public DeliveryInfo DeliveryInfo { get; private set; } = null!;
     public string? Notes { get; private set; }
 
     public IReadOnlyCollection<OrderItem> Items => _items;
@@ -27,113 +25,140 @@ public class Order : AggregateRoot, IAuditable
 
     private Order() { }
 
-    public Order(Guid customerId, string? notes = null)
-    {
-        CustomerId = customerId;
-        OrderDate = DateTime.UtcNow;
-        Status = OrderStatus.Pending;
-        Notes = notes;
-    }
-
     /// <summary>
-    /// Adds an item to the order by snapshotting product data at order time.
-    /// If an item with the same ProductId and UnitPrice.Currency already exists, combines their quantities.
-    /// Otherwise, creates a new OrderItem.
+    /// Creates a complete historical order from product data loaded by the server.
+    /// A placed order is immediately eligible for payment but is not yet confirmed.
     /// </summary>
-    public void AddItem(
-        Guid productId,
-        string productName,
-        Money unitPrice,
-        int quantity,
+    public static Order Place(
+        Guid customerId,
+        DeliveryInfo deliveryInfo,
+        IReadOnlyCollection<OrderLineSnapshot> items,
         string? notes = null)
     {
-        if (Status != OrderStatus.Pending)
-            throw new InvalidOrderStateException("add items to", Status.ToString());
+        if (customerId == Guid.Empty)
+            throw new ArgumentException("Customer ID is required.", nameof(customerId));
 
-        if (quantity <= 0)
-            throw new InvalidQuantityException();
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(deliveryInfo);
+        if (items.Count == 0)
+            throw new EmptyOrderException();
 
-        // Check for duplicate: same ProductId AND same currency (price snapshot)
-        var existing = _items.FirstOrDefault(
-            i => i.ProductId == productId && i.UnitPrice.Currency == unitPrice.Currency);
-
-        if (existing is not null)
+        var order = new Order
         {
-            // Combine quantities for the same product and currency
-            existing.UpdateQuantity(existing.Quantity + quantity);
-        }
-        else
-        {
-            // Create new item with the snapshot
-            _items.Add(new OrderItem(Id, productId, productName, unitPrice, quantity, notes));
-        }
-    }
+            CustomerId = customerId,
+            OrderDate = DateTime.UtcNow,
+            Status = OrderStatus.PendingPayment,
+            Notes = notes,
+            DeliveryInfo = deliveryInfo
+        };
 
-    public void RemoveItem(Guid productId)
-    {
-        if (Status != OrderStatus.Pending)
-            throw new InvalidOrderStateException("remove items from", Status.ToString());
+        foreach (var item in items)
+            order.AddSnapshot(item);
 
-        var item = _items.FirstOrDefault(i => i.ProductId == productId);
-        if (item is not null)
-            _items.Remove(item);
+        order.RaiseDomainEvent(new OrderPlacedEvent(order.Id, order.CustomerId, order.TotalAmount));
+        return order;
     }
 
     public void SetDeliveryInfo(DeliveryInfo deliveryInfo)
     {
-        if (Status != OrderStatus.Pending)
-            throw new InvalidOrderStateException("change delivery information for", Status.ToString());
-
+        EnsureStatus(OrderStatus.PendingPayment, "change delivery information for");
         ArgumentNullException.ThrowIfNull(deliveryInfo);
         DeliveryInfo = deliveryInfo;
     }
 
-    public void EnsureReadyForPayment()
+    /// <summary>
+    /// Called by the application only after a successful payment has been verified.
+    /// </summary>
+    public void ConfirmPayment()
     {
-        if (Status != OrderStatus.Pending)
-            throw new InvalidOrderStateException("place", Status.ToString());
-
-        if (_items.Count == 0)
-            throw new EmptyOrderException();
-    }
-
-    public void Confirm()
-    {
-        if (Status != OrderStatus.Pending)
-            throw new InvalidOrderStateException("confirm", Status.ToString());
-
-        if (_items.Count == 0)
-            throw new EmptyOrderException();
-
+        EnsureStatus(OrderStatus.PendingPayment, "confirm payment for");
         Status = OrderStatus.Confirmed;
-        RaiseDomainEvent(new OrderPlacedEvent(Id, CustomerId, TotalAmount));
+        RaiseDomainEvent(new OrderConfirmedEvent(Id, CustomerId));
     }
 
-    public void MarkAsProcessing()
+    public void StartPreparing()
     {
-        if (Status != OrderStatus.Confirmed)
-            throw new InvalidOrderStateException("process", Status.ToString());
-
-        Status = OrderStatus.Processing;
+        EnsureStatus(OrderStatus.Confirmed, "start preparing");
+        Status = OrderStatus.Preparing;
     }
 
-    public void Complete()
+    public void MarkReadyForDelivery()
     {
-        if (Status != OrderStatus.Processing)
-            throw new InvalidOrderStateException("complete", Status.ToString());
+        EnsureStatus(OrderStatus.Preparing, "mark ready for delivery");
+        Status = OrderStatus.ReadyForDelivery;
+    }
 
+    public void MarkOutForDelivery()
+    {
+        EnsureStatus(OrderStatus.ReadyForDelivery, "send out for delivery");
+        Status = OrderStatus.OutForDelivery;
+    }
+
+    public void MarkDelivered()
+    {
+        EnsureStatus(OrderStatus.OutForDelivery, "mark delivered");
         Status = OrderStatus.Delivered;
     }
 
-    public void Cancel(string reason)
+    public void CancelUnpaid(string reason)
     {
-        if (Status == OrderStatus.Delivered)
-            throw new InvalidOrderStateException("cancel", Status.ToString());
+        EnsureStatus(OrderStatus.PendingPayment, "cancel as unpaid");
+        CancelCore(reason);
+    }
 
-        if (Status == OrderStatus.Cancelled)
-            throw new InvalidOrderStateException("cancel", Status.ToString());
+    /// <summary>
+    /// Called by the application only after the paid-order refund policy has completed.
+    /// </summary>
+    public void CancelAfterRefund(string reason)
+    {
+        if (Status is not (OrderStatus.Confirmed
+            or OrderStatus.Preparing
+            or OrderStatus.ReadyForDelivery
+            or OrderStatus.OutForDelivery))
+        {
+            throw new InvalidOrderStateException("cancel after refund", Status.ToString());
+        }
+
+        CancelCore(reason);
+    }
+
+    private void AddSnapshot(OrderLineSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        var existing = _items.FirstOrDefault(i =>
+            i.ProductId == snapshot.ProductId
+            && i.ProductName == snapshot.ProductName
+            && i.UnitPrice == snapshot.UnitPrice
+            && i.Notes == snapshot.Notes);
+
+        if (existing is not null)
+        {
+            existing.UpdateQuantity(existing.Quantity + snapshot.Quantity);
+            return;
+        }
+
+        _items.Add(new OrderItem(
+            Id,
+            snapshot.ProductId,
+            snapshot.ProductName,
+            snapshot.UnitPrice,
+            snapshot.Quantity,
+            snapshot.Notes));
+    }
+
+    private void CancelCore(string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("Cancellation reason is required.", nameof(reason));
 
         Status = OrderStatus.Cancelled;
         RaiseDomainEvent(new OrderCancelledEvent(Id, reason));
+    }
+
+    private void EnsureStatus(OrderStatus expectedStatus, string action)
+    {
+        if (Status != expectedStatus)
+            throw new InvalidOrderStateException(action, Status.ToString());
     }
 }

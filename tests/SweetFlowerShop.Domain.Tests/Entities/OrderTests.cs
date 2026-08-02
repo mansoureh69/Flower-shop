@@ -8,79 +8,98 @@ namespace SweetFlowerShop.Domain.Tests.Entities;
 
 public sealed class OrderTests
 {
-    private const string Currency = "USD";
-
     [Fact]
-    public void NewOrder_StartsPendingAndHasNoItems()
+    public void Place_CreatesCompletePendingPaymentOrderAndRaisesPlacedEvent()
     {
         var customerId = Guid.NewGuid();
 
-        var order = new Order(customerId, "Leave at reception");
+        var order = Order.Place(
+            customerId,
+            CreateDeliveryInfo(),
+            [CreateLine(price: 25.50m, quantity: 2)],
+            "Leave at reception");
 
         Assert.Equal(customerId, order.CustomerId);
-        Assert.Equal(OrderStatus.Pending, order.Status);
-        Assert.Empty(order.Items);
-        Assert.Equal(0m, order.TotalAmount);
-        Assert.Equal("Leave at reception", order.Notes);
-    }
-
-    [Fact]
-    public void EnsureReadyForPayment_ThrowsWhenOrderHasNoItems()
-    {
-        var order = CreateOrder();
-
-        Assert.Throws<EmptyOrderException>(() => order.EnsureReadyForPayment());
-    }
-
-    [Fact]
-    public void AddItem_CapturesHistoricalProductDataAndCalculatesTotal()
-    {
-        var order = CreateOrder();
-        var productId = Guid.NewGuid();
-
-        order.AddItem(productId, "Rose Bouquet", new Money(25.50m, Currency), 2, "Red roses");
-
-        var item = Assert.Single(order.Items);
-        Assert.Equal(productId, item.ProductId);
-        Assert.Equal("Rose Bouquet", item.ProductName);
-        Assert.Equal(new Money(25.50m, Currency), item.UnitPrice);
-        Assert.Equal(2, item.Quantity);
-        Assert.Equal("Red roses", item.Notes);
-        Assert.Equal(51m, item.TotalPrice);
+        Assert.Equal(OrderStatus.PendingPayment, order.Status);
         Assert.Equal(51m, order.TotalAmount);
+        Assert.Equal("Leave at reception", order.Notes);
+        Assert.Equal(CreateDeliveryInfo(), order.DeliveryInfo);
+
+        var domainEvent = Assert.IsType<OrderPlacedEvent>(Assert.Single(order.DomainEvents));
+        Assert.Equal(order.Id, domainEvent.OrderId);
+        Assert.Equal(customerId, domainEvent.CustomerId);
+        Assert.Equal(51m, domainEvent.TotalAmount);
+    }
+
+    [Fact]
+    public void Place_RejectsEmptyOrder()
+    {
+        Assert.Throws<EmptyOrderException>(() =>
+            Order.Place(Guid.NewGuid(), CreateDeliveryInfo(), []));
+    }
+
+    [Fact]
+    public void Place_RejectsMissingCustomerIdentity()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Order.Place(Guid.Empty, CreateDeliveryInfo(), [CreateLine()]));
+    }
+
+    [Fact]
+    public void Place_RejectsMissingDeliverySnapshot()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Order.Place(Guid.NewGuid(), null!, [CreateLine()]));
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(-10)]
-    public void AddItem_RejectsNonPositiveQuantity(int quantity)
+    public void Place_RejectsNonPositiveQuantity(int quantity)
     {
-        var order = CreateOrder();
-
         Assert.Throws<InvalidQuantityException>(() =>
-            order.AddItem(Guid.NewGuid(), "Rose Bouquet", new Money(10m, Currency), quantity));
+            Order.Place(Guid.NewGuid(), CreateDeliveryInfo(), [CreateLine(quantity: quantity)]));
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void AddItem_RejectsMissingProductName(string productName)
+    public void Place_RejectsMissingProductName(string productName)
     {
-        var order = CreateOrder();
-
         Assert.Throws<EmptyNameException>(() =>
-            order.AddItem(Guid.NewGuid(), productName, new Money(10m, Currency), 1));
+            Order.Place(Guid.NewGuid(), CreateDeliveryInfo(), [CreateLine(productName: productName)]));
     }
 
     [Fact]
-    public void AddItem_CombinesSameProductAndCurrency()
+    public void Place_CapturesHistoricalProductData()
     {
-        var order = CreateOrder();
         var productId = Guid.NewGuid();
 
-        order.AddItem(productId, "Rose Bouquet", new Money(10m, Currency), 1);
-        order.AddItem(productId, "Rose Bouquet", new Money(10m, Currency), 2);
+        var order = Order.Place(
+            Guid.NewGuid(),
+            CreateDeliveryInfo(),
+            [new OrderLineSnapshot(productId, "Rose Bouquet", new Money(25.50m, "USD"), 2, "Red roses")]);
+
+        var item = Assert.Single(order.Items);
+        Assert.Equal(productId, item.ProductId);
+        Assert.Equal("Rose Bouquet", item.ProductName);
+        Assert.Equal(new Money(25.50m, "USD"), item.UnitPrice);
+        Assert.Equal(2, item.Quantity);
+        Assert.Equal("Red roses", item.Notes);
+        Assert.Equal(51m, item.TotalPrice);
+    }
+
+    [Fact]
+    public void Place_CombinesOnlyIdenticalSnapshots()
+    {
+        var productId = Guid.NewGuid();
+        var snapshot = CreateLine(productId, price: 10m, quantity: 1);
+
+        var order = Order.Place(
+            Guid.NewGuid(),
+            CreateDeliveryInfo(),
+            [snapshot, snapshot with { Quantity = 2 }]);
 
         var item = Assert.Single(order.Items);
         Assert.Equal(3, item.Quantity);
@@ -88,13 +107,14 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void AddItem_KeepsDifferentCurrenciesAsSeparateSnapshots()
+    public void Place_KeepsDifferentPriceSnapshotsSeparate()
     {
-        var order = CreateOrder();
         var productId = Guid.NewGuid();
 
-        order.AddItem(productId, "Rose Bouquet", new Money(10m, "USD"), 1);
-        order.AddItem(productId, "Rose Bouquet", new Money(10m, "EUR"), 1);
+        var order = Order.Place(
+            Guid.NewGuid(),
+            CreateDeliveryInfo(),
+            [CreateLine(productId, price: 10m), CreateLine(productId, price: 12m)]);
 
         Assert.Equal(2, order.Items.Count);
     }
@@ -102,96 +122,216 @@ public sealed class OrderTests
     [Fact]
     public void ExistingOrderItem_DoesNotChangeWhenProductChangesLater()
     {
-        var categoryId = Guid.NewGuid();
-        var product = new Product("Rose Bouquet", "Original", new Money(20m, Currency), categoryId);
-        var order = CreateOrder();
-        order.AddItem(product.Id, product.Name, product.Price, 1);
+        var product = new Product(
+            "Rose Bouquet",
+            "Original",
+            new Money(20m, "USD"),
+            Guid.NewGuid());
+        var order = Order.Place(
+            Guid.NewGuid(),
+            CreateDeliveryInfo(),
+            [new OrderLineSnapshot(product.Id, product.Name, product.Price, 1)]);
 
         product.UpdateDetails("Renamed Bouquet", "Updated");
-        product.ChangePrice(new Money(40m, Currency));
+        product.ChangePrice(new Money(40m, "USD"));
 
         var item = Assert.Single(order.Items);
         Assert.Equal("Rose Bouquet", item.ProductName);
-        Assert.Equal(new Money(20m, Currency), item.UnitPrice);
+        Assert.Equal(new Money(20m, "USD"), item.UnitPrice);
     }
 
     [Fact]
-    public void Confirm_ConfirmsNonEmptyOrderAndRaisesOrderPlacedEvent()
+    public void ConfirmPayment_MovesPendingPaymentToConfirmedAndRaisesEvent()
     {
-        var order = CreateOrderWithItem();
+        var order = CreateOrder();
+        order.ClearDomainEvents();
 
-        order.Confirm();
+        order.ConfirmPayment();
 
         Assert.Equal(OrderStatus.Confirmed, order.Status);
-        var domainEvent = Assert.IsType<OrderPlacedEvent>(Assert.Single(order.DomainEvents));
+        var domainEvent = Assert.IsType<OrderConfirmedEvent>(Assert.Single(order.DomainEvents));
         Assert.Equal(order.Id, domainEvent.OrderId);
         Assert.Equal(order.CustomerId, domainEvent.CustomerId);
-        Assert.Equal(order.TotalAmount, domainEvent.TotalAmount);
     }
 
     [Fact]
-    public void Confirm_RejectsRepeatedConfirmation()
+    public void ConfirmPayment_RejectsRepeatedConfirmation()
     {
-        var order = CreateOrderWithItem();
-        order.Confirm();
+        var order = CreateConfirmedOrder();
 
-        Assert.Throws<InvalidOrderStateException>(() => order.Confirm());
+        Assert.Throws<InvalidOrderStateException>(() => order.ConfirmPayment());
     }
 
     [Fact]
-    public void ConfirmedOrder_RejectsItemAndDeliveryChanges()
+    public void Fulfilment_UsesEveryRequiredTransitionInOrder()
     {
-        var order = CreateOrderWithItem();
-        order.Confirm();
+        var order = CreateConfirmedOrder();
 
-        Assert.Throws<InvalidOrderStateException>(() =>
-            order.AddItem(Guid.NewGuid(), "Tulips", new Money(15m, Currency), 1));
-        Assert.Throws<InvalidOrderStateException>(() => order.RemoveItem(order.Items.Single().ProductId));
-        Assert.Throws<InvalidOrderStateException>(() => order.SetDeliveryInfo(CreateDeliveryInfo()));
-    }
+        order.StartPreparing();
+        Assert.Equal(OrderStatus.Preparing, order.Status);
 
-    [Fact]
-    public void ProcessingOrder_CanBeCompleted()
-    {
-        var order = CreateOrderWithItem();
-        order.Confirm();
-        order.MarkAsProcessing();
+        order.MarkReadyForDelivery();
+        Assert.Equal(OrderStatus.ReadyForDelivery, order.Status);
 
-        order.Complete();
+        order.MarkOutForDelivery();
+        Assert.Equal(OrderStatus.OutForDelivery, order.Status);
 
+        order.MarkDelivered();
         Assert.Equal(OrderStatus.Delivered, order.Status);
     }
 
     [Fact]
-    public void Cancel_RaisesEventAndMakesCancellationTerminal()
+    public void StartPreparing_RequiresConfirmedOrder()
     {
-        var order = CreateOrderWithItem();
+        var order = CreateOrder();
 
-        order.Cancel("Customer request");
+        Assert.Throws<InvalidOrderStateException>(() => order.StartPreparing());
+    }
+
+    [Fact]
+    public void MarkReadyForDelivery_RequiresPreparingOrder()
+    {
+        var order = CreateConfirmedOrder();
+
+        Assert.Throws<InvalidOrderStateException>(() => order.MarkReadyForDelivery());
+    }
+
+    [Fact]
+    public void MarkOutForDelivery_RequiresReadyOrder()
+    {
+        var order = CreateConfirmedOrder();
+        order.StartPreparing();
+
+        Assert.Throws<InvalidOrderStateException>(() => order.MarkOutForDelivery());
+    }
+
+    [Fact]
+    public void MarkDelivered_RequiresOutForDeliveryOrder()
+    {
+        var order = CreateConfirmedOrder();
+        order.StartPreparing();
+        order.MarkReadyForDelivery();
+
+        Assert.Throws<InvalidOrderStateException>(() => order.MarkDelivered());
+    }
+
+    [Fact]
+    public void SetDeliveryInfo_IsAllowedOnlyBeforePaymentConfirmation()
+    {
+        var order = CreateOrder();
+        var deliveryInfo = CreateDeliveryInfo();
+
+        order.SetDeliveryInfo(deliveryInfo);
+        Assert.Equal(deliveryInfo, order.DeliveryInfo);
+
+        order.ConfirmPayment();
+        Assert.Throws<InvalidOrderStateException>(() => order.SetDeliveryInfo(CreateDeliveryInfo()));
+    }
+
+    [Fact]
+    public void CancelUnpaid_CancelsPendingPaymentOrderAndRaisesEvent()
+    {
+        var order = CreateOrder();
+        order.ClearDomainEvents();
+
+        order.CancelUnpaid("Customer request");
 
         Assert.Equal(OrderStatus.Cancelled, order.Status);
         var domainEvent = Assert.IsType<OrderCancelledEvent>(Assert.Single(order.DomainEvents));
         Assert.Equal("Customer request", domainEvent.Reason);
-        Assert.Throws<InvalidOrderStateException>(() => order.Cancel("Again"));
     }
 
     [Fact]
-    public void DeliveredOrder_CannotBeCancelled()
+    public void CancelUnpaid_RejectsPaidOrder()
     {
-        var order = CreateOrderWithItem();
-        order.Confirm();
-        order.MarkAsProcessing();
-        order.Complete();
+        var order = CreateConfirmedOrder();
 
-        Assert.Throws<InvalidOrderStateException>(() => order.Cancel("Too late"));
+        Assert.Throws<InvalidOrderStateException>(() => order.CancelUnpaid("Customer request"));
     }
 
-    private static Order CreateOrder() => new(Guid.NewGuid());
-
-    private static Order CreateOrderWithItem()
+    [Fact]
+    public void CancelAfterRefund_RejectsUnpaidOrder()
     {
         var order = CreateOrder();
-        order.AddItem(Guid.NewGuid(), "Rose Bouquet", new Money(25m, Currency), 2);
+
+        Assert.Throws<InvalidOrderStateException>(() => order.CancelAfterRefund("Customer request"));
+    }
+
+    [Fact]
+    public void CancelAfterRefund_AllowsPaidNonTerminalStates()
+    {
+        var confirmed = CreateConfirmedOrder();
+        confirmed.CancelAfterRefund("Refund complete");
+
+        var preparing = CreateConfirmedOrder();
+        preparing.StartPreparing();
+        preparing.CancelAfterRefund("Refund complete");
+
+        var ready = CreateConfirmedOrder();
+        ready.StartPreparing();
+        ready.MarkReadyForDelivery();
+        ready.CancelAfterRefund("Refund complete");
+
+        var outForDelivery = CreateConfirmedOrder();
+        outForDelivery.StartPreparing();
+        outForDelivery.MarkReadyForDelivery();
+        outForDelivery.MarkOutForDelivery();
+        outForDelivery.CancelAfterRefund("Refund complete");
+
+        Assert.All(
+            new[] { confirmed, preparing, ready, outForDelivery },
+            order => Assert.Equal(OrderStatus.Cancelled, order.Status));
+    }
+
+    [Fact]
+    public void Cancellation_RequiresReason()
+    {
+        var order = CreateOrder();
+
+        Assert.Throws<ArgumentException>(() => order.CancelUnpaid("   "));
+        Assert.Equal(OrderStatus.PendingPayment, order.Status);
+    }
+
+    [Fact]
+    public void DeliveredAndCancelledOrdersAreTerminal()
+    {
+        var delivered = CreateDeliveredOrder();
+        Assert.Throws<InvalidOrderStateException>(() => delivered.MarkDelivered());
+        Assert.Throws<InvalidOrderStateException>(() => delivered.CancelAfterRefund("Too late"));
+        Assert.Throws<InvalidOrderStateException>(() => delivered.SetDeliveryInfo(CreateDeliveryInfo()));
+
+        var cancelled = CreateOrder();
+        cancelled.CancelUnpaid("Customer request");
+        Assert.Throws<InvalidOrderStateException>(() => cancelled.ConfirmPayment());
+        Assert.Throws<InvalidOrderStateException>(() => cancelled.StartPreparing());
+        Assert.Throws<InvalidOrderStateException>(() => cancelled.CancelUnpaid("Again"));
+        Assert.Throws<InvalidOrderStateException>(() => cancelled.SetDeliveryInfo(CreateDeliveryInfo()));
+    }
+
+    private static OrderLineSnapshot CreateLine(
+        Guid? productId = null,
+        string productName = "Rose Bouquet",
+        decimal price = 25m,
+        int quantity = 1) =>
+        new(productId ?? Guid.NewGuid(), productName, new Money(price, "USD"), quantity);
+
+    private static Order CreateOrder() =>
+        Order.Place(Guid.NewGuid(), CreateDeliveryInfo(), [CreateLine()]);
+
+    private static Order CreateConfirmedOrder()
+    {
+        var order = CreateOrder();
+        order.ConfirmPayment();
+        return order;
+    }
+
+    private static Order CreateDeliveredOrder()
+    {
+        var order = CreateConfirmedOrder();
+        order.StartPreparing();
+        order.MarkReadyForDelivery();
+        order.MarkOutForDelivery();
+        order.MarkDelivered();
         return order;
     }
 

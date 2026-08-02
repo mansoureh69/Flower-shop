@@ -3,6 +3,7 @@ using SweetFlowerShop.Application.Common;
 using SweetFlowerShop.Application.Features.Orders.Common;
 using SweetFlowerShop.Application.Interfaces;
 using SweetFlowerShop.Domain.Entities;
+using SweetFlowerShop.Domain.ValueObjects;
 
 namespace SweetFlowerShop.Application.Features.Orders.PlaceOrder;
 
@@ -19,7 +20,7 @@ public sealed class PlaceOrderCommandHandler(
         if (customerId is null)
             return Result<OrderResponse>.Failure("An authenticated customer is required.");
 
-        var order = new Order(customerId.Value, request.Notes);
+        var snapshots = new List<OrderLineSnapshot>(request.Items.Count);
 
         foreach (var item in request.Items)
         {
@@ -32,17 +33,24 @@ public sealed class PlaceOrderCommandHandler(
             if (!product.IsAvailable)
                 return Result<OrderResponse>.Failure($"Product is not available: {product.Name}");
 
-            // Pass snapshot values to Order.AddItem
-            // The handler loads Product but passes only its data, not the entity itself
-            order.AddItem(
-                productId: product.Id,
-                productName: product.Name,
-                unitPrice: product.Price,
-                quantity: item.Quantity,
-                notes: item.Notes);
+            snapshots.Add(new OrderLineSnapshot(
+                product.Id,
+                product.Name,
+                product.Price,
+                item.Quantity,
+                item.Notes));
         }
 
-        order.EnsureReadyForPayment();
+        var deliveryInfo = new DeliveryInfo(
+            request.Delivery.RecipientName,
+            request.Delivery.RecipientPhone,
+            request.Delivery.Street,
+            request.Delivery.City,
+            request.Delivery.ZipCode,
+            request.Delivery.ScheduledDate,
+            request.Delivery.GiftMessage);
+
+        var order = Order.Place(customerId.Value, deliveryInfo, snapshots, request.Notes);
 
         // Persist the order with all items snapshotted
         await orderRepository.AddAsync(order, cancellationToken);
@@ -62,6 +70,14 @@ internal static class OrderMappingExtensions
             order.Status,
             order.TotalAmount,
             order.Notes,
+            new DeliveryInfoResponse(
+                order.DeliveryInfo.RecipientName,
+                order.DeliveryInfo.RecipientPhone,
+                order.DeliveryInfo.Street,
+                order.DeliveryInfo.City,
+                order.DeliveryInfo.ZipCode,
+                order.DeliveryInfo.ScheduledDate,
+                order.DeliveryInfo.GiftMessage),
             order.Items
                 .Select(i => new OrderItemResponse(
                     i.Id,

@@ -20,6 +20,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         // Value Object: DeliveryInfo (nullable owned type — order may not have delivery info yet)
         builder.OwnsOne(o => o.DeliveryInfo, b => b.ConfigureDeliveryInfo());
+        builder.Navigation(o => o.DeliveryInfo).IsRequired();
 
         // Navigation to child entities — explicit backing field access
         builder.HasMany(o => o.Items)

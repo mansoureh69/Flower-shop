@@ -2,10 +2,11 @@ namespace SweetFlowerShop.Domain.Enums;
 
 public enum OrderStatus
 {
-    Pending,
+    PendingPayment,
     Confirmed,
-    Processing,
-    Shipped,
+    Preparing,
+    ReadyForDelivery,
+    OutForDelivery,
     Delivered,
     Cancelled
 }

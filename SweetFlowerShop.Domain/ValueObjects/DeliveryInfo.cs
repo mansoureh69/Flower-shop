@@ -30,6 +30,9 @@ public record DeliveryInfo
         if (string.IsNullOrWhiteSpace(city))
             throw new ArgumentException("City is required.", nameof(city));
 
+        if (string.IsNullOrWhiteSpace(zipCode))
+            throw new ArgumentException("Zip code is required.", nameof(zipCode));
+
         RecipientName = recipientName;
         RecipientPhone = recipientPhone;
         Street = street;

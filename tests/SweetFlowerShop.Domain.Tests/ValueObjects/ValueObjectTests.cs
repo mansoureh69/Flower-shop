@@ -81,5 +81,7 @@ public sealed class ValueObjectTests
             new DeliveryInfo("Jane Doe", "+1-555-0100", "", "Tehran", "12345"));
         Assert.Throws<ArgumentException>(() =>
             new DeliveryInfo("Jane Doe", "+1-555-0100", "12 Garden Street", "", "12345"));
+        Assert.Throws<ArgumentException>(() =>
+            new DeliveryInfo("Jane Doe", "+1-555-0100", "12 Garden Street", "Tehran", ""));
     }
 }
