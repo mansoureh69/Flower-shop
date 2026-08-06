@@ -24,9 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SweetFlowerShop.Application\SweetFlowerShop.Application.csproj" />
     <ProjectReference Include="..\SweetFlowerShop.Infrastructure\SweetFlowerShop.Infrastructure.csproj" />
-    <ProjectReference Include="..\flower-shop.client\flower-shop.client.esproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,72 @@
+<section class="register-page" aria-labelledby="register-title">
+    <div class="register-card">
+        <p class="eyebrow">Create account</p>
+        <h1 id="register-title">Join Sweet Flower Shop</h1>
+        <p class="subtitle">Create a new account to save your favorites and complete checkout.</p>
+
+        @if (errorMessage()) {
+        <div class="message message--error" role="alert">{{ errorMessage() }}</div>
+        }
+
+        @if (successMessage()) {
+        <div class="message message--success" role="status">{{ successMessage() }}</div>
+        }
+
+        <form class="register-form" [formGroup]="form" (ngSubmit)="submit()">
+            <div class="name-row">
+                <label class="field">
+                    <span>First name</span>
+                    <input type="text" formControlName="firstName" placeholder="First name" />
+                    @if (form.controls.firstName.invalid && form.controls.firstName.touched) {
+                    <small>First name is required.</small>
+                    }
+                </label>
+
+                <label class="field">
+                    <span>Last name</span>
+                    <input type="text" formControlName="lastName" placeholder="Last name" />
+                    @if (form.controls.lastName.invalid && form.controls.lastName.touched) {
+                    <small>Last name is required.</small>
+                    }
+                </label>
+            </div>
+
+            <label class="field">
+                <span>Email</span>
+                <input type="email" formControlName="email" placeholder="you@example.com" />
+                @if (form.controls.email.invalid && form.controls.email.touched) {
+                <small>Please enter a valid email.</small>
+                }
+            </label>
+
+            <label class="field">
+                <span>Password</span>
+                <input type="password" formControlName="password" placeholder="At least 8 characters" />
+                @if (form.controls.password.invalid && form.controls.password.touched) {
+                <small>Password must be at least 8 characters.</small>
+                }
+            </label>
+
+            <label class="field">
+                <span>Confirm password</span>
+                <input type="password" formControlName="confirmPassword" placeholder="Confirm password" />
+                @if (form.controls.confirmPassword.invalid && form.controls.confirmPassword.touched) {
+                <small>Please confirm your password.</small>
+                }
+            </label>
+
+            <button class="register-button" type="submit" [disabled]="isSubmitting()">
+                @if (isSubmitting()) {
+                <span>Creating account...</span>
+                } @else {
+                <span>Create account</span>
+                }
+            </button>
+        </form>
+
+        <p class="footer-text">
+            Already have an account?
+            <a routerLink="/login">Sign in</a>
+        </p>
+    </div>
+</section>

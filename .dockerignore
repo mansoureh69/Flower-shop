@@ -1,0 +1,54 @@
+# Git and version control
+.git
+.gitignore
+.github
+.gitattributes
+
+# IDE and editor files
+.vscode
+.vs
+*.user
+*.suo
+*.sln.iml
+.idea
+.editorconfig
+
+# Build artifacts and packages
+bin/
+obj/
+dist/
+build/
+*.nupkg
+*.snupkg
+
+# Node.js and npm (not needed in final image)
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Test files
+tests/
+*.test.js
+*.spec.js
+coverage/
+
+# Documentation
+*.md
+README.md
+CHANGELOG.md
+
+# Environment files (secrets should NOT be in images)
+.env
+.env.local
+appsettings.Local.json
+appsettings.Development.json
+appsettings.Local.example.json
+
+# Node SPA build artifacts (we'll handle separately)
+.angular/
+dist/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log

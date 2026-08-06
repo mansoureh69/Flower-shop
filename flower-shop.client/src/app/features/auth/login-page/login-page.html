@@ -1,0 +1,46 @@
+<section class="login-page" aria-labelledby="login-title">
+  <div class="login-card">
+    <p class="eyebrow">Account access</p>
+    <h1 id="login-title">Sign in to your account</h1>
+    <p class="subtitle">Use your email and password to continue shopping.</p>
+
+    @if (errorMessage()) {
+    <div class="message message--error" role="alert">{{ errorMessage() }}</div>
+    }
+
+    @if (successMessage()) {
+    <div class="message message--success" role="status">{{ successMessage() }}</div>
+    }
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="you@example.com" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+        <small>Please enter a valid email.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="Enter password" />
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+        <small>Password is required.</small>
+        }
+      </label>
+
+      <button class="login-button" type="submit" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+        <span>Signing in...</span>
+        } @else {
+        <span>Sign in</span>
+        }
+      </button>
+    </form>
+
+    <p class="footer-text">
+      New customer?
+      <a routerLink="/">Return to home</a>
+    </p>
+  </div>
+</section>

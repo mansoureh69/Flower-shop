@@ -14,36 +14,23 @@
 
     <nav class="desktop-navigation" aria-label="Primary navigation">
       @for (item of navigationItems(); track item.fragment) {
-        <a [attr.href]="'#' + item.fragment">{{ item.label }}</a>
+      <a [attr.href]="'#' + item.fragment">{{ item.label }}</a>
       }
     </nav>
 
     <a class="header-cta" href="#fresh-picks">Find a bouquet</a>
+    <a class="header-login" routerLink="/login">Login</a>
+    <a class="header-register" routerLink="/register">Register</a>
 
-    <button
-      #menuButton
-      class="menu-button"
-      type="button"
-      aria-label="Open navigation menu"
-      aria-haspopup="dialog"
-      [attr.aria-expanded]="menuOpen()"
-      aria-controls="mobile-navigation"
-      (click)="openMenu()"
-    >
+    <button #menuButton class="menu-button" type="button" aria-label="Open navigation menu" aria-haspopup="dialog"
+      [attr.aria-expanded]="menuOpen()" aria-controls="mobile-navigation" (click)="openMenu()">
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
     </button>
   </div>
 
-  <dialog
-    #menuDialog
-    class="mobile-navigation"
-    id="mobile-navigation"
-    aria-labelledby="mobile-navigation-title"
-    (cancel)="handleDialogCancelled($event)"
-    (close)="handleDialogClosed()"
-    (click)="closeFromBackdrop($event)"
-  >
+  <dialog #menuDialog class="mobile-navigation" id="mobile-navigation" aria-labelledby="mobile-navigation-title"
+    (cancel)="handleDialogCancelled($event)" (close)="handleDialogClosed()" (click)="closeFromBackdrop($event)">
     <div class="mobile-navigation__panel">
       <div class="mobile-navigation__topline">
         <p id="mobile-navigation-title">Explore the shop</p>
@@ -54,10 +41,10 @@
 
       <nav aria-label="Mobile navigation">
         @for (item of navigationItems(); track item.fragment; let index = $index) {
-          <a [attr.href]="'#' + item.fragment" (click)="closeMenu()">
-            <span aria-hidden="true">0{{ index + 1 }}</span>
-            {{ item.label }}
-          </a>
+        <a [attr.href]="'#' + item.fragment" (click)="closeMenu()">
+          <span aria-hidden="true">0{{ index + 1 }}</span>
+          {{ item.label }}
+        </a>
         }
       </nav>
     </div>
